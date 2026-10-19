@@ -1,26 +1,40 @@
 package model
 
 // RecordType is the type of a record being rated.
-// Together with [RecordId], it uniquely identifies the record being rated.
+// Together with [RecordID], it uniquely identifies the record being rated.
 //
 // Example: Movie, Actor, etc.
 type RecordType string
 
-// RecordId is the ID of a record being rated.
+// RecordID is the ID of a record being rated.
 // Together with [RecordType], it uniquely identifies the record being rated.
-type RecordId string
+type RecordID string
 
-// UserId is the ID of the user to whom the rating belongs.
+// UserID is the ID of the user to whom the rating belongs.
 type UserID string
 
 // RatingValue represents a value for a rating record.
-type RatingValue int
+type RatingValue uint8
+
+const (
+	// MinRatingValue is the minimum allowed [RatingValue].
+	MinRatingValue RatingValue = 1
+
+	// MaxRatingValue is the maximum allowed [RatingValue].
+	MaxRatingValue RatingValue = 10
+)
+
+// RatingSum represents a running sum of user ratings per record type and record ID.
+type RatingSum uint64
+
+// RatingCount represents a running count of user ratings per record type and record ID.
+type RatingCount uint64
 
 // Rating is a user's rating for a given record.
-// Its RecordType and RecordId together identify the record being rated.
+// Its RecordType and RecordID together uniquely identify the record being rated.
 type Rating struct {
 	RecordType RecordType  `json:"recordType"`
-	RecordId   RecordId    `json:"recordId"`
+	RecordID   RecordID    `json:"recordID"`
 	UserID     UserID      `json:"userID"`
 	Value      RatingValue `json:"value"`
 }

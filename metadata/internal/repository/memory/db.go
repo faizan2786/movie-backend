@@ -21,7 +21,7 @@ func NewDB() *DB {
 
 // GetMetadata returns [model.Metadata] for a movie with given id.
 // It returns [repository.ErrNotFound] if the movie doesn't exists.
-func (db *DB) GetMetadata(ctx context.Context, id string) (model.Metadata, error) {
+func (db *DB) GetMetadata(_ context.Context, id string) (model.Metadata, error) {
 	db.m.RLock()
 	defer db.m.RUnlock()
 
@@ -34,8 +34,8 @@ func (db *DB) GetMetadata(ctx context.Context, id string) (model.Metadata, error
 }
 
 // StoreMetadata stores metadata for a movie with given id.
-// It returns [repository.ErrAlreadyExists] error when metadata already exists.
-func (db *DB) StoreMetadata(ctx context.Context, data model.Metadata) error {
+// It returns [repository.ErrAlreadyExists] error when given metadata already exists.
+func (db *DB) StoreMetadata(_ context.Context, data model.Metadata) error {
 	if len(data.ID) == 0 {
 		return repository.ErrNullId
 	}

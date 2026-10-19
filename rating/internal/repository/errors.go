@@ -2,11 +2,13 @@ package repository
 
 import "errors"
 
-// ErrNotFound a "resource not found" error.
-var ErrNotFound error = errors.New("not found")
+var (
+	// ErrNotFound is returned when a resource is "not found".
+	ErrNotFound = errors.New("not found")
 
-// ErrAlreadyExists represents a "resource already exists" error.
-var ErrAlreadyExists error = errors.New("already exists")
+	// ErrEmptyID is returned when a provided resource ID is empty.
+	ErrEmptyID = errors.New("id cannot be empty")
 
-// ErrNullId represents a "resource id is null/empty" error.
-var ErrNullId error = errors.New("id can not be empty")
+	// ErrInvalidValue is returned when a provided rating value is out of range.
+	ErrInvalidValue = errors.New("rating value is out of range")
+)
