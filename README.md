@@ -1,6 +1,6 @@
 # Movie Backend
 
-This repository is a Go workspace for a movie backend project. It currently includes the metadata service, which provides HTTP endpoints for storing and retrieving movie metadata.
+This repository is a Golang movie backend project. The project consists of 3 HTTP web services named metadata, rating and apiserver.
 
 ## Structure
 
