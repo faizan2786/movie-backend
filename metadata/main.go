@@ -15,7 +15,7 @@ func main() {
 
 	db := memory.NewDB()
 	controller := controller.New(db)
-	handler := handler.New(*controller)
+	handler := handler.New(controller)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{id}", handler.GetMetadata)

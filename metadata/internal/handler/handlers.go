@@ -12,16 +12,16 @@ import (
 
 // Handler implements http handlers for the metadata service.
 type Handler struct {
-	c controller.Controller
+	c *controller.Controller
 }
 
 // New returns a new of [Handler].
-func New(c controller.Controller) *Handler {
-	return &Handler{c: c}
+func New(ctlr *controller.Controller) *Handler {
+	return &Handler{c: ctlr}
 }
 
 // GetMetadata is an http GET handler to retrieve movie metadata
-func (h Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
 	// read `id` from the (named) path parameter
 	id := r.PathValue("id")
 	if len(id) == 0 {
@@ -56,8 +56,8 @@ func (h Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 // PutMetadata is an http PUT handler to store movie metadata
-func (h Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
-	// read Id from the path parameter
+func (h *Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
+	// read `id` from the path parameter
 	id := r.PathValue("id")
 	if len(id) == 0 {
 		log.Println("PutMetadata: id can not be null")
@@ -70,7 +70,7 @@ func (h Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
 	// decode metadata from the body (assuming body is in json format)
 	var data model.Metadata
 	err := json.NewDecoder(r.Body).Decode(&data)
-	data.Id = id // use the id given as the path parameter
+	data.ID = id // use the id given as the path parameter
 	if err != nil {
 		log.Printf("PutMetadata: json body decoding error; id = %s; error = %s", id, err)
 		w.WriteHeader(http.StatusBadRequest)

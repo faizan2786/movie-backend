@@ -27,7 +27,7 @@ func New(r Repository) *Controller {
 
 // GetMetadata returns [model.Metadata] for a movie with given id.
 // It returns [ErrNotFound] if the movie doesn't exists.
-func (c Controller) GetMetadata(ctx context.Context, id string) (model.Metadata, error) {
+func (c *Controller) GetMetadata(ctx context.Context, id string) (model.Metadata, error) {
 	data, err := c.repo.GetMetadata(ctx, id)
 	if err != nil && errors.Is(err, repository.ErrNotFound) {
 		return data, ErrNotFound
@@ -41,7 +41,7 @@ func (c Controller) GetMetadata(ctx context.Context, id string) (model.Metadata,
 // PutMetadata stores metadata for a movie with given id.
 // It returns [ErrAlreadyExists] error when metadata already exists.
 func (c *Controller) PutMetadata(ctx context.Context, data model.Metadata) error {
-	if len(data.Id) == 0 {
+	if len(data.ID) == 0 {
 		return ErrNullId
 	}
 

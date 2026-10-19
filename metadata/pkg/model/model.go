@@ -1,8 +1,8 @@
 package model
 
 type Metadata struct {
-	Id          string `json:"id"`
+	ID          string `json:"id"`
 	Title       string `json:"title"`
-	ReleaseYear int    `json:"release_year,omitempty"`
+	ReleaseYear int    `json:"releaseYear,omitempty"`
 	Description string `json:"description,omitempty"`
 }
