@@ -8,7 +8,7 @@ import (
 
 // Repository provides a database access layer for the metadata service.
 type Repository interface {
-	GetRating(context.Context, model.RecordType, model.RecordID) (model.RatingSum, model.RatingCount, error)
+	GetRating(context.Context, model.RecordType, model.RecordID) (float64, error)
 	UpsertRating(context.Context, model.Rating) error
 }
 

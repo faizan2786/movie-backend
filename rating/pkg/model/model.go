@@ -24,12 +24,6 @@ const (
 	MaxRatingValue RatingValue = 10
 )
 
-// RatingSum represents a running sum of user ratings per record type and record ID.
-type RatingSum uint64
-
-// RatingCount represents a running count of user ratings per record type and record ID.
-type RatingCount uint64
-
 // Rating is a user's rating for a given record.
 // Its RecordType and RecordID together uniquely identify the record being rated.
 type Rating struct {

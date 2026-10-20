@@ -17,15 +17,12 @@ func TestMemory_EmptyDB(t *testing.T) {
 	recordID := model.RecordID("1")
 
 	// verify correct error is thrown (instead of crashing)
-	s, c, err := db.GetRating(t.Context(), recordType, recordID)
+	rating, err := db.GetRating(t.Context(), recordType, recordID)
 	if err == nil {
 		t.Fatalf("got no error; want error = %s", repository.ErrNotFound)
 	}
-	if s != model.RatingSum(0) {
-		t.Fatalf("got sum = %d; want sum = %d", s, 0)
-	}
-	if c != model.RatingCount(0) {
-		t.Fatalf("got count = %d; want count = %d", c, 0)
+	if rating != 0 {
+		t.Fatalf("got rating = %f; want rating = %f", rating, float64(0))
 	}
 }
 
@@ -52,15 +49,12 @@ func TestMemory_InsertAndFetch(t *testing.T) {
 	}
 
 	// verify the stored rating
-	s, c, err := db.GetRating(t.Context(), recordType, recordID)
+	rating, err := db.GetRating(t.Context(), recordType, recordID)
 	if err != nil {
 		t.Fatalf("GetRating: got error = %s; want no errors", err)
 	}
-	if s != model.RatingSum(ratingValue) {
-		t.Fatalf("got sum = %d; want sum = %d", s, ratingValue)
-	}
-	if c != model.RatingCount(1) {
-		t.Fatalf("got count = %d; want count = %d", c, 1)
+	if rating != float64(ratingValue) {
+		t.Fatalf("got rating = %f; want rating = %f", rating, float64(ratingValue))
 	}
 
 	// insert a new rating (i.e. rating by a different user)
@@ -80,15 +74,12 @@ func TestMemory_InsertAndFetch(t *testing.T) {
 	}
 
 	// verify stored results
-	s, c, err = db.GetRating(t.Context(), recordType, recordID)
+	rating, err = db.GetRating(t.Context(), recordType, recordID)
 	if err != nil {
 		t.Fatalf("GetRating: got error = %s; want no errors", err)
 	}
-	if s != model.RatingSum(13) {
-		t.Fatalf("got sum = %d; want sum = %d", s, 13)
-	}
-	if c != model.RatingCount(2) {
-		t.Fatalf("got count = %d; want count = %d", c, 2)
+	if rating != 6.5 {
+		t.Fatalf("got rating = %f; want rating = %f", rating, 6.5)
 	}
 
 }
@@ -131,15 +122,12 @@ func TestMemory_UpsertAndFetch(t *testing.T) {
 	}
 
 	// verify the stored rating
-	s, c, err := db.GetRating(t.Context(), recordType, recordID)
+	rating, err := db.GetRating(t.Context(), recordType, recordID)
 	if err != nil {
 		t.Fatalf("GetRating: got error = %s; want no errors", err)
 	}
-	if s != model.RatingSum(14) {
-		t.Fatalf("got sum = %d; want sum = %d", s, 14)
-	}
-	if c != model.RatingCount(2) {
-		t.Fatalf("got count = %d; want count = %d", c, 2)
+	if rating != 7.0 {
+		t.Fatalf("got rating = %f; want rating = %f", rating, 7.0)
 	}
 
 	// update an existing rating record
@@ -158,15 +146,12 @@ func TestMemory_UpsertAndFetch(t *testing.T) {
 		t.Fatalf("UpsertRating: got error = %s; want no errors", err)
 	}
 
-	s, c, err = db.GetRating(t.Context(), recordType, recordID)
+	rating, err = db.GetRating(t.Context(), recordType, recordID)
 	if err != nil {
 		t.Fatalf("GetRating: got error = %s; want no errors", err)
 	}
-	if s != model.RatingSum(11) {
-		t.Fatalf("got sum = %d; want sum = %d", s, 11)
-	}
-	if c != model.RatingCount(2) {
-		t.Fatalf("got count = %d; want count = %d", c, 2)
+	if rating != 5.5 {
+		t.Fatalf("got rating = %f; want rating = %f", rating, 5.5)
 	}
 }
 
@@ -270,7 +255,7 @@ func TestMemory_GetNotFound(t *testing.T) {
 	// empty record type
 	recordType = model.RecordType("")
 
-	_, _, err = db.GetRating(t.Context(), recordType, recordID)
+	_, err = db.GetRating(t.Context(), recordType, recordID)
 	if !errors.Is(err, repository.ErrNotFound) {
 		t.Fatalf("got error = %s; want error = %s", err, repository.ErrNotFound)
 	}
@@ -278,7 +263,7 @@ func TestMemory_GetNotFound(t *testing.T) {
 	// non-existent record type
 	recordType = model.RecordType("actors")
 
-	_, _, err = db.GetRating(t.Context(), recordType, recordID)
+	_, err = db.GetRating(t.Context(), recordType, recordID)
 	if !errors.Is(err, repository.ErrNotFound) {
 		t.Fatalf("got error = %s; want error = %s", err, repository.ErrNotFound)
 	}
@@ -287,7 +272,7 @@ func TestMemory_GetNotFound(t *testing.T) {
 	recordType = model.RecordType("movies")
 	recordID = model.RecordID("")
 
-	_, _, err = db.GetRating(t.Context(), recordType, recordID)
+	_, err = db.GetRating(t.Context(), recordType, recordID)
 	if !errors.Is(err, repository.ErrNotFound) {
 		t.Fatalf("got error = %s; want error = %s", err, repository.ErrNotFound)
 	}
@@ -296,7 +281,7 @@ func TestMemory_GetNotFound(t *testing.T) {
 	recordType = model.RecordType("movies")
 	recordID = model.RecordID("456")
 
-	_, _, err = db.GetRating(t.Context(), recordType, recordID)
+	_, err = db.GetRating(t.Context(), recordType, recordID)
 	if !errors.Is(err, repository.ErrNotFound) {
 		t.Fatalf("got error = %s; want error = %s", err, repository.ErrNotFound)
 	}

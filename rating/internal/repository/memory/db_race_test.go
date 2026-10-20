@@ -14,7 +14,7 @@ import (
 )
 
 // TestMemory_ConcurrentInsertsAndGets inserts ratings from many different users
-// while concurrently reading the same record, then verifies the final sum and count.
+// while concurrently reading the same record, then verifies the final average.
 func TestMemory_ConcurrentInsertsAndGets(t *testing.T) {
 	db := memory.NewDB()
 
@@ -23,10 +23,10 @@ func TestMemory_ConcurrentInsertsAndGets(t *testing.T) {
 	const users = 200
 
 	var wg sync.WaitGroup
-	var wantSum model.RatingSum
+	var wantSum uint64
 	for i := range users {
 		ratingValue := model.RatingValue(i%10 + 1) // values 1..10
-		wantSum += model.RatingSum(ratingValue)
+		wantSum += uint64(ratingValue)
 
 		// writer: a new rating by a different user
 		wg.Go(func() {
@@ -51,15 +51,13 @@ func TestMemory_ConcurrentInsertsAndGets(t *testing.T) {
 	wg.Wait()
 
 	// verify the final state once all goroutines have finished
-	s, c, err := db.GetRating(t.Context(), recordType, recordID)
+	rating, err := db.GetRating(t.Context(), recordType, recordID)
 	if err != nil {
 		t.Fatalf("GetRating: got error = %s; want no errors", err)
 	}
-	if s != wantSum {
-		t.Fatalf("got sum = %d; want sum = %d", s, wantSum)
-	}
-	if c != model.RatingCount(users) {
-		t.Fatalf("got count = %d; want count = %d", c, users)
+	wantAverage := float64(wantSum) / float64(users)
+	if rating != wantAverage {
+		t.Fatalf("got rating = %f; want rating = %f", rating, wantAverage)
 	}
 }
 
@@ -100,15 +98,12 @@ func TestMemory_ConcurrentUpdatesSameUser(t *testing.T) {
 	}
 	wg.Wait()
 
-	// the last write wins, so the sum must equal one of the written values
-	s, c, err := db.GetRating(t.Context(), recordType, recordID)
+	// the last write wins, so the average must equal one of the written values
+	rating, err := db.GetRating(t.Context(), recordType, recordID)
 	if err != nil {
 		t.Fatalf("GetRating: got error = %s; want no errors", err)
 	}
-	if c != model.RatingCount(1) {
-		t.Fatalf("got count = %d; want count = %d", c, 1)
-	}
-	if !ratingSet[model.RatingValue(s)] {
-		t.Fatalf("got sum = %d; want sum = one of %v", s, ratingPool)
+	if !ratingSet[model.RatingValue(rating)] {
+		t.Fatalf("got rating = %f; want rating = one of %v", rating, ratingPool)
 	}
 }

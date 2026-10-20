@@ -2,11 +2,15 @@ package memory
 
 import (
 	"context"
+	"log"
 	"sync"
 
 	"github.com/faizan2786/movie-backend/rating/internal/repository"
 	"github.com/faizan2786/movie-backend/rating/pkg/model"
 )
+
+// ratingSum represents a running sum of user ratings per record type and record ID.
+type ratingSum uint64
 
 // DB is an in-memory database for the rating service.
 // Its zero value is not ready for use, use [NewDB] to create a DB.
@@ -18,35 +22,41 @@ type DB struct {
 
 	// ratingSums stores a running sum of user ratings
 	// per record type and record ID
-	ratingSums map[model.RecordType]map[model.RecordID]model.RatingSum
+	ratingSums map[model.RecordType]map[model.RecordID]ratingSum
 }
 
 // NewDB returns a new [DB].
 func NewDB() *DB {
 	return &DB{
 		ratings:    map[model.RecordType]map[model.RecordID]map[model.UserID]model.Rating{},
-		ratingSums: map[model.RecordType]map[model.RecordID]model.RatingSum{},
+		ratingSums: map[model.RecordType]map[model.RecordID]ratingSum{},
 	}
 }
 
-// GetRating returns the running sum and total count of user ratings
-// for a given record type and record ID.
-// It returns [repository.ErrNotFound] when a rating doesn't exist.
-func (db *DB) GetRating(_ context.Context, rType model.RecordType, rID model.RecordID) (model.RatingSum, model.RatingCount, error) {
+// GetRating returns average ratings for a given record type and record ID.
+// It returns [repository.ErrNotFound] when a rating record doesn't exist.
+func (db *DB) GetRating(_ context.Context, rType model.RecordType, rID model.RecordID) (float64, error) {
+	var rating float64
+
 	db.m.RLock()
 	defer db.m.RUnlock()
 
-	var sum model.RatingSum
-	var count model.RatingCount
+	var sum ratingSum
 	var ok bool
-
 	// return error if either record type or record ID don't exist
 	if sum, ok = db.ratingSums[rType][rID]; !ok {
-		return sum, count, repository.ErrNotFound
+		return rating, repository.ErrNotFound
 	}
-	count = model.RatingCount(len(db.ratings[rType][rID]))
 
-	return sum, count, nil
+	count := len(db.ratings[rType][rID])
+	if count == 0 {
+		// shouldn't happen
+		log.Printf("found 0 records for record type = %q and record id = %q: shouldn't have happened!", rType, rID)
+		return rating, repository.ErrNotFound
+	}
+
+	rating = float64(sum) / float64(count)
+	return rating, nil
 }
 
 // UpsertRating inserts or updates user rating by its record type and ID.
@@ -86,13 +96,13 @@ func (db *DB) updateRating(r model.Rating) {
 
 	// update the sum for given record type and ID
 	db.ratingSums[r.RecordType][r.RecordID] =
-		db.ratingSums[r.RecordType][r.RecordID] - model.RatingSum(currValue) + model.RatingSum(r.Value)
+		db.ratingSums[r.RecordType][r.RecordID] - ratingSum(currValue) + ratingSum(r.Value)
 }
 
 func (db *DB) insertRating(r model.Rating) {
 	if db.ratings[r.RecordType] == nil {
 		db.ratings[r.RecordType] = map[model.RecordID]map[model.UserID]model.Rating{}
-		db.ratingSums[r.RecordType] = map[model.RecordID]model.RatingSum{}
+		db.ratingSums[r.RecordType] = map[model.RecordID]ratingSum{}
 	}
 
 	if db.ratings[r.RecordType][r.RecordID] == nil {
@@ -103,5 +113,5 @@ func (db *DB) insertRating(r model.Rating) {
 	db.ratings[r.RecordType][r.RecordID][r.UserID] = r
 
 	// update the sum for given record type and ID
-	db.ratingSums[r.RecordType][r.RecordID] += model.RatingSum(r.Value)
+	db.ratingSums[r.RecordType][r.RecordID] += ratingSum(r.Value)
 }
