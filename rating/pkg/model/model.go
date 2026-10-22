@@ -14,7 +14,7 @@ type RecordID string
 type UserID string
 
 // RatingValue represents a value for a rating record.
-type RatingValue uint8
+type RatingValue int
 
 const (
 	// MinRatingValue is the minimum allowed [RatingValue].
@@ -23,6 +23,14 @@ const (
 	// MaxRatingValue is the maximum allowed [RatingValue].
 	MaxRatingValue RatingValue = 10
 )
+
+// Validate returns true if the value is valid.
+func (rv RatingValue) Validate() bool {
+	if rv < MinRatingValue || rv > MaxRatingValue {
+		return false
+	}
+	return true
+}
 
 // Rating is a user's rating for a given record.
 // Its RecordType and RecordID together uniquely identify the record being rated.

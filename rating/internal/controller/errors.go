@@ -2,13 +2,13 @@ package controller
 
 import "errors"
 
-// ErrNotFound a "resource not found" error.
 var (
+	// ErrNotFound is returned when a resource is "not found".
 	ErrNotFound = errors.New("not found")
 
-	// ErrAlreadyExists represents a "resource already exists" error.
-	ErrAlreadyExists = errors.New("already exists")
+	// ErrEmptyID is returned when a provided resource ID is empty.
+	ErrEmptyID = errors.New("record type, record id and user id cannot be empty")
 
-	// ErrNullId represents a "resource id is null/empty" error.
-	ErrNullId = errors.New("id can not be empty")
+	// ErrInvalidValue is returned when a provided rating value is out of range.
+	ErrInvalidValue = errors.New("rating value is out of range")
 )

@@ -35,9 +35,7 @@ func NewDB() *DB {
 
 // GetRating returns average ratings for a given record type and record ID.
 // It returns [repository.ErrNotFound] when a rating record doesn't exist.
-func (db *DB) GetRating(_ context.Context, rType model.RecordType, rID model.RecordID) (float64, error) {
-	var rating float64
-
+func (db *DB) GetRating(_ context.Context, rType model.RecordType, rID model.RecordID) (rating float64, err error) {
 	db.m.RLock()
 	defer db.m.RUnlock()
 
@@ -68,7 +66,7 @@ func (db *DB) UpsertRating(_ context.Context, r model.Rating) error {
 		return repository.ErrEmptyID
 	}
 
-	if r.Value < model.MinRatingValue || r.Value > model.MaxRatingValue {
+	if ok := r.Value.Validate(); !ok {
 		return repository.ErrInvalidValue
 	}
 

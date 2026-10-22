@@ -46,8 +46,7 @@ func (h *Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
 
 	// json encode the response and write it back
 	w.Header().Set("Content-Type", "application/json")
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(data)
+	err = json.NewEncoder(w).Encode(data)
 	if err != nil {
 		log.Printf("GetMetadata: json encoding error; id = %s; error = %s", id, err)
 		w.WriteHeader(http.StatusInternalServerError)
