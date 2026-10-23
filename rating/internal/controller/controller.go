@@ -9,13 +9,13 @@ import (
 	"github.com/faizan2786/movie-backend/rating/pkg/model"
 )
 
-// Repository provides a database access layer for the metadata service.
+// Repository provides a database access layer for the rating service.
 type Repository interface {
 	GetRating(context.Context, model.RecordType, model.RecordID) (float64, error)
 	UpsertRating(context.Context, model.Rating) error
 }
 
-// Controller implements business logic to retrieve movie metadata.
+// Controller implements business logic to retrieve ratings for various record types.
 type Controller struct {
 	repo Repository
 }
@@ -29,7 +29,7 @@ func New(r Repository) *Controller {
 // It returns [ErrNotFound] when a rating record doesn't exist.
 func (c *Controller) GetRating(ctx context.Context, recordType model.RecordType, recordID model.RecordID) (float64, error) {
 	rating, err := c.repo.GetRating(ctx, recordType, recordID)
-	if err != nil && errors.Is(err, repository.ErrNotFound) {
+	if errors.Is(err, repository.ErrNotFound) {
 		return rating, ErrNotFound
 	}
 	if err != nil {
@@ -54,7 +54,14 @@ func (c *Controller) PutRating(ctx context.Context, r model.Rating) error {
 
 	err := c.repo.UpsertRating(ctx, r)
 	if err != nil {
-		return fmt.Errorf("unknown repository error: %w", err)
+		switch {
+		case errors.Is(err, repository.ErrEmptyID):
+			return ErrEmptyID
+		case errors.Is(err, repository.ErrInvalidValue):
+			return ErrInvalidValue
+		default:
+			return fmt.Errorf("unknown repository error: %w", err)
+		}
 	}
 	return nil
 }
