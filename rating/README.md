@@ -1,15 +1,14 @@
 # Rating Service
 
-This Go module provides the ratings backend for the movie application. It stores user submissions for a given record and computes the average rating for that record.
+This Go module provides **an HTTP service** backend for storing and retrieving ratings for various record types. It stores user submissions for a given record and computes the average rating for that record.
 
-The current implementation is a layered service with an in-memory repository, a controller, and a handler package that is ready to be wired to the HTTP service.
+Its design uses a **layered architecture**, separating the HTTP handling (i.e. API layer), business logic (i.e. controller layer), and data storage (i.e. repository layer) concerns.
 
 ## What it does
 
 - Stores a rating for a specific record using its `recordType`, `recordID`, and `userID`
 - Validates empty IDs and out-of-range rating values
 - Retrieves the current average rating for a record
-- Returns a not-found error when no record rating exists
 
 ## Architecture
 
@@ -49,7 +48,6 @@ The in-memory database keeps ratings grouped by:
 
 `GetRating` returns a `float64` average for the record and returns `repository.ErrNotFound` when the record does not exist.
 
-`UpsertRating` enforces validation rules:
-
+`UpsertRating` enforces these validation rules:
 - empty `recordType`, `recordID`, or `userID` is rejected
 - values below 1 or above 10 are rejected
