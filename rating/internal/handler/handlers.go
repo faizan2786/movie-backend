@@ -23,9 +23,12 @@ func New(c *controller.Controller) *Handler {
 func (h *Handler) GetRating(w http.ResponseWriter, r *http.Request) {
 	recordType := r.PathValue("type")
 	recordID := r.PathValue("id")
+
+	log.Printf("GetRating: request received for type=%q and id=%q", recordType, recordID)
+
 	rating, err := h.controller.GetRating(r.Context(), model.RecordType(recordType), model.RecordID(recordID))
 	if errors.Is(err, controller.ErrNotFound) {
-		log.Printf("GetRating: type=%q, id=%q, error=rating record doesn't exist", recordType, recordID)
+		log.Printf("GetRating: type=%q, id=%q, error=record doesn't exist", recordType, recordID)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -46,6 +49,7 @@ func (h *Handler) PutRating(w http.ResponseWriter, r *http.Request) {
 	recordType := r.PathValue("type")
 	recordID := r.PathValue("id")
 
+	// decode rating data from the request body
 	var rating model.Rating
 	err := json.NewDecoder(r.Body).Decode(&rating)
 	if err != nil {

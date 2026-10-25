@@ -2,8 +2,8 @@ package controller
 
 import "errors"
 
-// ErrNotFound is returned when a resource is "not found".
 var (
+	// ErrNotFound is returned when a resource is "not found".
 	ErrNotFound = errors.New("not found")
 
 	// ErrAlreadyExists is returned when a resource "already exists".

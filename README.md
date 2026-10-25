@@ -16,7 +16,7 @@ The repository is organized as a multi-module Go workspace so each service can e
 
 Run go commands for the relevant module directory from the workspace root, for example:
 
-- `go test .metadata/...` & `go run .metadata/...`
-- `go test .rating/...` & `go run .rating/...`
+- `go test ./metadata/...` & `go run .metadata/...`
+- `go test ./rating/...` & `go run .rating/...`
 
 Each service keeps its own README and internal package layout for controller, handler, repository, and model concerns.
