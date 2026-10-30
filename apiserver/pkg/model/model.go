@@ -14,6 +14,9 @@ func (id ID) Valid() bool {
 	return validID.MatchString(string(id))
 }
 
+// status is an HTTP response status
+type Status int
+
 // Metadata is movie metadata.
 type Metadata struct {
 	ID          ID     `json:"id"`

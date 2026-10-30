@@ -112,7 +112,7 @@ func TestNewGateway(t *testing.T) {
 	}
 }
 
-func TestGetMovieRatingValid(t *testing.T) {
+func TestGetMovieRating(t *testing.T) {
 	server := newTestServerGET(t, http.StatusOK, false)
 	gw, err := rating.NewGateway(server.URL)
 	require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestGetMovieRatingValid(t *testing.T) {
 	require.Equal(t, testDataGET, data)
 }
 
-func TestGetMovieRatingWithErrors(t *testing.T) {
+func TestGetMovieRating_WithErrors(t *testing.T) {
 	testCases := []struct {
 		name        string
 		code        int     // response code that needs to be sent by the server
@@ -178,20 +178,18 @@ func TestGetMovieRatingWithErrors(t *testing.T) {
 	}
 }
 
-func TestSubmitMovieRatingValid(t *testing.T) {
-	server := newTestServerPUT(t, http.StatusOK)
-	gw, err := rating.NewGateway(server.URL)
-	require.NoError(t, err)
-
-	err = gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
-	require.NoError(t, err)
-}
-
-func TestPUTMovieRatingWithErrors(t *testing.T) {
+// TestPUTMovieRating tests that SubmitMovieRating returns no errors
+// on successful requests to the rating service, even when
+// the status code returned by the service is not 200
+func TestPUTMovieRating_NoErrors(t *testing.T) {
 	testCases := []struct {
 		name string
 		code int // response code that needs to be sent by the server
 	}{
+		{
+			name: "status ok",
+			code: http.StatusOK,
+		},
 		{
 			name: "not found",
 			code: http.StatusNotFound,
@@ -212,11 +210,9 @@ func TestPUTMovieRatingWithErrors(t *testing.T) {
 			gw, err := rating.NewGateway(server.URL)
 			require.NoError(t, err)
 
-			err = gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
-			require.Error(t, err)
-
-			// check error logs
-			//t.Log(err)
+			status, err := gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
+			require.NoError(t, err)
+			require.Equal(t, int(status), tc.code)
 		})
 	}
 }

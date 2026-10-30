@@ -3,7 +3,7 @@ package model
 // RecordType is the type of a record being rated.
 // Together with [RecordID], it uniquely identifies the record being rated.
 //
-// Example: Movie, Actor, etc.
+// Example: movies, actors, etc.
 type RecordType string
 
 // RecordID is the ID of a record being rated.
