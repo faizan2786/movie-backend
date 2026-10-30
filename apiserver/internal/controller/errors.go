@@ -8,4 +8,7 @@ var (
 
 	// ErrInvalidID is returned when an ID is "not valid".
 	ErrInvalidID = errors.New("id not valid")
+
+	// ErrInvalidRating is returned when a rating is "not valid".
+	ErrInvalidRating = errors.New("rating not valid")
 )

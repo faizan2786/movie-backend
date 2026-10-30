@@ -77,18 +77,13 @@ func (g *Gateway) GetMovieRating(ctx context.Context, movieID model.ID) (model.R
 	return rating, nil
 }
 
-// SubmitMovieRating submits movie ratings for users and
-// returns the status code received from the rating service.
-//
-// Error is nil if a request was sent to the rating service, irrespective of its response
-// (when the error is not nil, 0 is returned as the status code).
-func (g *Gateway) SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) (model.Status, error) {
-	var status model.Status
-
+// SubmitMovieRating submits movie ratings for users.
+// It returns [gateway.ErrInvalidInput] if the rating service rejects the rating as not valid.
+func (g *Gateway) SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) error {
 	// marshall rating to send it as a request body
 	data, err := json.Marshal(rating)
 	if err != nil {
-		return status, fmt.Errorf("json request encode error: %w", err)
+		return fmt.Errorf("json request encode error: %w", err)
 	}
 	body := bytes.NewReader(data)
 
@@ -96,20 +91,23 @@ func (g *Gateway) SubmitMovieRating(ctx context.Context, movieID model.ID, ratin
 	u := g.url.JoinPath("movies", url.PathEscape(string(movieID)))
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), body)
 	if err != nil {
-		return status, fmt.Errorf("can not create a new HTTP request: %w", err)
+		return fmt.Errorf("can not create a new HTTP request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	log.Printf("sending PUT request to %q", u)
 	res, err := g.client.Do(req)
 	if err != nil {
-		return status, fmt.Errorf("PUT request error: %w", err)
+		return fmt.Errorf("PUT request error: %w", err)
 	}
 	defer res.Body.Close()
 
-	// in case of a non 2xx status, log the response
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		log.Printf("non 2xx response code: %d; response: %v", res.StatusCode, res)
+	// read the status code
+	if res.StatusCode == http.StatusBadRequest {
+		return gateway.ErrInvalidInput
 	}
-	return model.Status(res.StatusCode), nil
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return fmt.Errorf("non 2xx response code: %d; response: %v", res.StatusCode, res)
+	}
+	return nil
 }

@@ -178,29 +178,41 @@ func TestGetMovieRating_WithErrors(t *testing.T) {
 	}
 }
 
-// TestPUTMovieRating tests that SubmitMovieRating returns no errors
-// on successful requests to the rating service, even when
-// the status code returned by the service is not 200
-func TestPUTMovieRating_NoErrors(t *testing.T) {
+func TestPUTMovieRating(t *testing.T) {
+	server := newTestServerPUT(t, http.StatusOK)
+	gw, err := rating.NewGateway(server.URL)
+	require.NoError(t, err)
+
+	err = gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
+	require.NoError(t, err)
+}
+
+func TestPUTMovieRating_WithErrors(t *testing.T) {
 	testCases := []struct {
-		name string
-		code int // response code that needs to be sent by the server
+		name        string
+		code        int     // response code that needs to be sent by the server
+		wantErr     error   // which error to expect
+		wantNotErrs []error // which errors NOT to expect
 	}{
 		{
-			name: "status ok",
-			code: http.StatusOK,
+			name:    "bad request",
+			code:    http.StatusBadRequest,
+			wantErr: gateway.ErrInvalidInput,
 		},
 		{
-			name: "not found",
-			code: http.StatusNotFound,
+			name:        "not found",
+			code:        http.StatusNotFound,
+			wantNotErrs: []error{gateway.ErrInvalidInput},
 		},
 		{
-			name: "not authorized",
-			code: http.StatusUnauthorized,
+			name:        "not authorized",
+			code:        http.StatusUnauthorized,
+			wantNotErrs: []error{gateway.ErrInvalidInput},
 		},
 		{
-			name: "server error",
-			code: http.StatusInternalServerError,
+			name:        "server error",
+			code:        http.StatusInternalServerError,
+			wantNotErrs: []error{gateway.ErrInvalidInput},
 		},
 	}
 
@@ -210,9 +222,18 @@ func TestPUTMovieRating_NoErrors(t *testing.T) {
 			gw, err := rating.NewGateway(server.URL)
 			require.NoError(t, err)
 
-			status, err := gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
-			require.NoError(t, err)
-			require.Equal(t, int(status), tc.code)
+			err = gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
+			require.Error(t, err)
+
+			// check expected error
+			if tc.wantErr != nil {
+				require.ErrorIs(t, err, tc.wantErr)
+			}
+
+			// check unexpected errors
+			for _, e := range tc.wantNotErrs {
+				require.NotErrorIs(t, err, e)
+			}
 		})
 	}
 }

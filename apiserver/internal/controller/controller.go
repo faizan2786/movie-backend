@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/faizan2786/movie-backend/apiserver/internal/gateway"
 	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
@@ -18,10 +17,10 @@ type MetadataGateway interface {
 // RatingGateway is an interface for movie ratings.
 type RatingGateway interface {
 	GetMovieRating(ctx context.Context, movieID model.ID) (model.RatingValue, error)
-	SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) (model.Status, error)
+	SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) error
 }
 
-// Controller implements business logic to ...
+// Controller implements business logic for the server
 type Controller struct {
 	mgw MetadataGateway
 	rgw RatingGateway
@@ -37,6 +36,7 @@ func New(mgw MetadataGateway, rgw RatingGateway) *Controller {
 
 // GetMovie returns a movie's data (including its aggregated rating)
 // It returns [ErrNotFound] if a movie with given ID doesn't exist.
+// A movie without any ratings is returned with a zero rating.
 func (c *Controller) GetMovie(ctx context.Context, id model.ID) (model.Movie, error) {
 	var movie model.Movie
 	if !id.Valid() {
@@ -53,11 +53,13 @@ func (c *Controller) GetMovie(ctx context.Context, id model.ID) (model.Movie, er
 	movie.Metadata = metadata
 
 	// fetch the rating
-	// rating error is logged but not returned, as a movie may exist without a rating
 	rating, err := c.rgw.GetMovieRating(ctx, id)
-	if err != nil {
-		log.Printf("GetMovieRating: error=%s", err)
-	} else {
+	switch {
+	case errors.Is(err, gateway.ErrNotFound):
+		// a movie may exist without any ratings
+	case err != nil:
+		return movie, fmt.Errorf("GetMovieRating: %w", err)
+	default:
 		movie.Rating = rating
 	}
 
@@ -65,22 +67,26 @@ func (c *Controller) GetMovie(ctx context.Context, id model.ID) (model.Movie, er
 }
 
 // SubmitMovieRating submits ratings for a movie for given user.
-// It returns [ErrNotFound] if a movie with given ID doesn't exist yet.
-//
-// When error is not nil, 0 is returned as the status code.
-func (c *Controller) SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) (model.Status, error) {
-	var status model.Status
+// It returns [ErrNotFound] if a movie with given ID doesn't exist yet and
+// [ErrInvalidRating] if the rating is rejected by the rating service.
+func (c *Controller) SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) error {
 	if !(movieID.Valid() && rating.UserID.Valid()) {
-		return status, ErrInvalidID
+		return ErrInvalidID
 	}
 
 	// fetch the movie metadata (to check if a movie exists)
 	_, err := c.mgw.GetMetadata(ctx, movieID)
 	if errors.Is(err, gateway.ErrNotFound) {
-		return status, fmt.Errorf("%w: movie doesn't exist", ErrNotFound)
+		return fmt.Errorf("%w: movie doesn't exist", ErrNotFound)
 	} else if err != nil {
-		return status, fmt.Errorf("GetMetadata: %w", err)
+		return fmt.Errorf("GetMetadata: %w", err)
 	}
 
-	return c.rgw.SubmitMovieRating(ctx, movieID, rating)
+	err = c.rgw.SubmitMovieRating(ctx, movieID, rating)
+	if errors.Is(err, gateway.ErrInvalidInput) {
+		return ErrInvalidRating
+	} else if err != nil {
+		return fmt.Errorf("SubmitMovieRating: %w", err)
+	}
+	return nil
 }

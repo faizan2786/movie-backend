@@ -45,7 +45,6 @@ func (h *Handler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("GetMovie: json response encode error: error=%s; id=%s", err, id)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -64,11 +63,11 @@ func (h *Handler) PutMovieRating(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	// submit the rating using controller
-	status, err := h.controller.SubmitMovieRating(r.Context(), model.ID(movieID), rating)
+	err = h.controller.SubmitMovieRating(r.Context(), model.ID(movieID), rating)
 	if err != nil {
 		log.Printf("PutMovieRating: error=%s; movie_id=%s; user_id=%s", err, movieID, rating.UserID)
 
-		if errors.Is(err, controller.ErrInvalidID) {
+		if errors.Is(err, controller.ErrInvalidID) || errors.Is(err, controller.ErrInvalidRating) {
 			w.WriteHeader(http.StatusBadRequest)
 		} else if errors.Is(err, controller.ErrNotFound) {
 			w.WriteHeader(http.StatusNotFound)
@@ -77,7 +76,4 @@ func (h *Handler) PutMovieRating(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
-	// forward the status code received from the controller
-	w.WriteHeader(int(status))
 }
