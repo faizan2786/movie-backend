@@ -9,6 +9,8 @@ import (
 	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
 )
 
+//go:generate mockgen -source=controller.go -destination=mock_controller/mock.go
+
 // MetadataGateway is an interface for movie metadata.
 type MetadataGateway interface {
 	GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error)

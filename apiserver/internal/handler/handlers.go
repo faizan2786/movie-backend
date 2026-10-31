@@ -52,7 +52,7 @@ func (h *Handler) GetMovie(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) PutMovieRating(w http.ResponseWriter, r *http.Request) {
 	movieID := r.PathValue("id")
 
-	// deserialise the request body to get rating details
+	// deserialize the request body to get rating details
 	var rating model.Rating
 	err := json.NewDecoder(r.Body).Decode(&rating)
 	if err != nil {
