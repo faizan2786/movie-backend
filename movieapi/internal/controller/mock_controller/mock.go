@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/faizan2786/movie-backend/apiserver/pkg/model"
+	model "github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	gomock "go.uber.org/mock/gomock"
 )
 

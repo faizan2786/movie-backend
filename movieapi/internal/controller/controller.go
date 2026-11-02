@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway"
-	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 )
 
 //go:generate mockgen -source=controller.go -destination=mock_controller/mock.go

@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/faizan2786/movie-backend/apiserver/internal/controller"
-	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
+	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
+	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 )
 
-// Handler implements http handlers for the apiserver.
+// Handler implements http handlers for the movieapi service.
 type Handler struct {
 	controller *controller.Controller
 }

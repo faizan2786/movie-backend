@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway"
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway/rating"
-	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
+	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	"github.com/stretchr/testify/require"
 )
 

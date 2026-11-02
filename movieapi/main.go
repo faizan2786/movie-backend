@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/faizan2786/movie-backend/apiserver/internal/controller"
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway/metadata"
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway/rating"
-	"github.com/faizan2786/movie-backend/apiserver/internal/handler"
+	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
+	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
 )
 
 const port = "8083"
@@ -30,9 +30,9 @@ func main() {
 	mux.HandleFunc("PUT /ratings/movies/{id}", handler.PutMovieRating)
 
 	// start the web server
-	log.Printf("starting movie api server on port: %s\n", port)
+	log.Printf("starting movieapi service on port: %s\n", port)
 	err = http.ListenAndServe("localhost:"+port, mux)
 	if err != nil {
-		log.Fatalf("api server stopped")
+		log.Fatalf("movieapi service stopped")
 	}
 }

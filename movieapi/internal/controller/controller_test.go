@@ -3,10 +3,10 @@ package controller_test
 import (
 	"testing"
 
-	"github.com/faizan2786/movie-backend/apiserver/internal/controller"
-	mock "github.com/faizan2786/movie-backend/apiserver/internal/controller/mock_controller"
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway"
-	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
+	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
+	mock "github.com/faizan2786/movie-backend/movieapi/internal/controller/mock_controller"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )

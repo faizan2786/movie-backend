@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/faizan2786/movie-backend/apiserver/internal/gateway"
-	"github.com/faizan2786/movie-backend/apiserver/pkg/model"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 )
 
 // Gateway is a gateway to communicate with the metadata service.
