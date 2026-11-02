@@ -27,7 +27,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /movies/{id}", handler.GetMovie)
-	mux.HandleFunc("PUT /ratings/movies/{id}", handler.PutMovieRating)
+	mux.HandleFunc("PUT /movies/{id}/ratings/{userID}", handler.PutMovieRating)
 
 	// start the web server
 	log.Printf("starting movieapi service on port: %s\n", port)

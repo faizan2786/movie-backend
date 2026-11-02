@@ -48,11 +48,12 @@ func (h *Handler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// PutMovieRating is an http PUT handler to submit movie ratings.
+// PutMovieRating is an http PUT handler to submit a user's rating for a movie.
 func (h *Handler) PutMovieRating(w http.ResponseWriter, r *http.Request) {
 	movieID := r.PathValue("id")
+	userID := r.PathValue("userID")
 
-	// deserialize the request body to get rating details
+	// deserialize the request body to get the rating value
 	var rating model.Rating
 	err := json.NewDecoder(r.Body).Decode(&rating)
 	if err != nil {
@@ -61,6 +62,7 @@ func (h *Handler) PutMovieRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+	rating.UserID = model.ID(userID) // use the user ID given as the path parameter
 
 	// submit the rating using controller
 	err = h.controller.SubmitMovieRating(r.Context(), model.ID(movieID), rating)

@@ -6,10 +6,10 @@ Its design uses a **layered architecture**, separating the HTTP handling (i.e. A
 
 ## Endpoints
 
-| Method | Path                   | Description                                |
-| ------ | ---------------------- | ------------------------------------------ |
-| `GET`  | `/movies/{id}`         | Get a movie's metadata and average rating  |
-| `PUT`  | `/ratings/movies/{id}` | Submit a user's rating for a movie         |
+| Method | Path                            | Description                                |
+| ------ | ------------------------------- | ------------------------------------------ |
+| `GET`  | `/movies/{id}`                  | Get a movie's metadata and average rating  |
+| `PUT`  | `/movies/{id}/ratings/{userID}` | Submit a user's rating for a movie         |
 
 `GET` returns the movie's metadata with its average rating:
 
@@ -17,10 +17,10 @@ Its design uses a **layered architecture**, separating the HTTP handling (i.e. A
 {"id": "the-matrix", "title": "The Matrix", "releaseYear": 1999, "rating": 8.5}
 ```
 
-`PUT` takes the user's rating as JSON:
+`PUT` takes the rating value as JSON; a user's new rating for a movie replaces their previous one:
 
 ```json
-{"userID": "user-42", "value": 8}
+{"value": 8}
 ```
 
 ## Behavior
