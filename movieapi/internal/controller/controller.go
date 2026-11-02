@@ -7,6 +7,7 @@ import (
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
+	"golang.org/x/sync/errgroup"
 )
 
 //go:generate mockgen -source=controller.go -destination=mock_controller/mock.go
@@ -45,24 +46,40 @@ func (c *Controller) GetMovie(ctx context.Context, id model.ID) (model.Movie, er
 		return movie, ErrInvalidID
 	}
 
-	// fetch the metadata
-	metadata, err := c.mgw.GetMetadata(ctx, id)
-	if errors.Is(err, gateway.ErrNotFound) {
-		return movie, ErrNotFound
-	} else if err != nil {
-		return movie, fmt.Errorf("GetMetadata: %w", err)
-	}
-	movie.Metadata = metadata
+	// create a new error group
+	errgrp, gctx := errgroup.WithContext(ctx)
 
-	// fetch the rating
-	rating, err := c.rgw.GetMovieRating(ctx, id)
-	switch {
-	case errors.Is(err, gateway.ErrNotFound):
-		// a movie may exist without any ratings
-	case err != nil:
-		return movie, fmt.Errorf("GetMovieRating: %w", err)
-	default:
-		movie.Rating = rating
+	// fetch the metadata (in parallel)
+	errgrp.Go(func() error {
+		metadata, err := c.mgw.GetMetadata(gctx, id)
+		switch {
+		case errors.Is(err, gateway.ErrNotFound):
+			return ErrNotFound
+		case err != nil:
+			return fmt.Errorf("GetMetadata: %w", err)
+		default:
+			movie.Metadata = metadata
+		}
+		return nil // return no error on a successful fetch
+	})
+
+	// fetch the rating (in parallel)
+	errgrp.Go(func() error {
+		rating, err := c.rgw.GetMovieRating(gctx, id)
+		switch {
+		case errors.Is(err, gateway.ErrNotFound):
+			// a movie may exist without any ratings
+		case err != nil:
+			return fmt.Errorf("GetMovieRating: %w", err)
+		default:
+			movie.Rating = rating
+		}
+		return nil // return no error on a successful fetch (or on an empty rating)
+	})
+
+	// wait until all fetches finish (or an error is returned)
+	if err := errgrp.Wait(); err != nil {
+		return movie, err
 	}
 
 	return movie, nil

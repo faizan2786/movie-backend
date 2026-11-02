@@ -35,6 +35,8 @@ var testRating = model.Rating{
 }
 
 func TestGetMovie(t *testing.T) {
+	t.Parallel()
+
 	// create a new controller instance with mocked gateways
 	ctrl := gomock.NewController(t)
 	metadataMock := mock.NewMockMetadataGateway(ctrl)
@@ -52,6 +54,8 @@ func TestGetMovie(t *testing.T) {
 }
 
 func TestGetMovie_MetadataErrNotFound(t *testing.T) {
+	t.Parallel()
+
 	// create a new controller instance with mocked gateways
 	ctrl := gomock.NewController(t)
 	metadataMock := mock.NewMockMetadataGateway(ctrl)
@@ -60,6 +64,7 @@ func TestGetMovie_MetadataErrNotFound(t *testing.T) {
 
 	// set the mock call expectations with Error values to be returned
 	metadataMock.EXPECT().GetMetadata(gomock.Any(), testMovieID).Return(model.Metadata{}, gateway.ErrNotFound)
+	ratingMock.EXPECT().GetMovieRating(gomock.Any(), testMovieID).Return(model.RatingValue(0), nil)
 
 	// call the method under test
 	_, err := c.GetMovie(t.Context(), testMovieID)
@@ -67,6 +72,8 @@ func TestGetMovie_MetadataErrNotFound(t *testing.T) {
 }
 
 func TestGetMovie_RatingErrNotFound(t *testing.T) {
+	t.Parallel()
+
 	// create a new controller instance with mocked gateways
 	ctrl := gomock.NewController(t)
 	metadataMock := mock.NewMockMetadataGateway(ctrl)
@@ -83,6 +90,8 @@ func TestGetMovie_RatingErrNotFound(t *testing.T) {
 }
 
 func TestSubmitMovieRating(t *testing.T) {
+	t.Parallel()
+
 	// create a new controller instance with mocked gateways
 	ctrl := gomock.NewController(t)
 	metadataMock := mock.NewMockMetadataGateway(ctrl)
@@ -99,6 +108,8 @@ func TestSubmitMovieRating(t *testing.T) {
 }
 
 func TestSubmitMovieRating_MetadataErrNotFound(t *testing.T) {
+	t.Parallel()
+
 	// create a new controller instance with mocked gateways
 	ctrl := gomock.NewController(t)
 	metadataMock := mock.NewMockMetadataGateway(ctrl)
@@ -115,7 +126,9 @@ func TestSubmitMovieRating_MetadataErrNotFound(t *testing.T) {
 	require.ErrorIs(t, err, controller.ErrNotFound)
 }
 
-func TestGetMovie_RatingErrInvalidInput(t *testing.T) {
+func TestSubmitMovieRating_RatingErrInvalidInput(t *testing.T) {
+	t.Parallel()
+
 	// create a new controller instance with mocked gateways
 	ctrl := gomock.NewController(t)
 	metadataMock := mock.NewMockMetadataGateway(ctrl)
