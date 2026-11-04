@@ -1,9 +1,13 @@
 package gateway
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"math/rand/v2"
 	"net/url"
+
+	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
 
 var (
@@ -17,8 +21,29 @@ var (
 	ErrInvalidURL = errors.New("URL not valid")
 )
 
-// ParseURL parses given address as a valid service URL.
-func ParseURL(addr string) (*url.URL, error) {
+// GetServiceURL returns a valid url of a specified service from the registry at random.
+func GetServiceURL(ctx context.Context, service string, registry discovery.ServiceRegistry, scheme string) (*url.URL, error) {
+
+	// get a service address from the registry at random
+	addrs, err := registry.ServiceAddresses(ctx, service)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get an address for %q service: %w", service, err)
+	}
+	if len(addrs) == 0 {
+		return nil, fmt.Errorf("cannot get an address for %q service: %w", service, discovery.ErrNotFound)
+	}
+
+	addr := addrs[rand.IntN(len(addrs))]
+	addr = fmt.Sprintf("%s://%s", scheme, addr)
+	u, err := parseURL(addr)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get a valid URL for %q service: %w", service, err)
+	}
+	return u, nil
+}
+
+// parseURL parses given address as a valid service URL.
+func parseURL(addr string) (*url.URL, error) {
 	serviceURL, err := url.Parse(addr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrInvalidURL, err)

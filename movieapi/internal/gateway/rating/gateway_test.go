@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
+	"github.com/faizan2786/movie-backend/pkg/discovery"
+	"github.com/faizan2786/movie-backend/pkg/discovery/memory"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +27,7 @@ var testDataPUT = model.Rating{
 }
 
 // test server for GET requests
-func newTestServerGET(t *testing.T, statusCode int, sendInvalidResp bool) *httptest.Server {
+func registryWithTestServerGET(t *testing.T, statusCode int, sendInvalidResp bool) discovery.ServiceRegistry {
 	t.Helper()
 
 	const expectedPath = "/movies/" + testMovieID
@@ -45,11 +48,19 @@ func newTestServerGET(t *testing.T, statusCode int, sendInvalidResp bool) *httpt
 	server := httptest.NewTestServer(t, handler)
 	server.Start()
 	t.Cleanup(server.Close)
-	return server
+
+	// register the server's address (host+port) with the registry
+	reg := memory.New()
+	_, serverHostPort, _ := strings.Cut(server.URL, "://")
+	err := reg.Register(t.Context(), discovery.RatingServiceName, discovery.GenerateInstanceID(), serverHostPort)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return reg
 }
 
 // test server for PUT requests
-func newTestServerPUT(t *testing.T, statusCode int) *httptest.Server {
+func registryWithTestServerPUT(t *testing.T, statusCode int) discovery.ServiceRegistry {
 	t.Helper()
 
 	const expectedPath = "/movies/" + testMovieID
@@ -79,43 +90,20 @@ func newTestServerPUT(t *testing.T, statusCode int) *httptest.Server {
 	server := httptest.NewTestServer(t, handler)
 	server.Start()
 	t.Cleanup(server.Close)
-	return server
-}
 
-func TestNewGateway(t *testing.T) {
-	testCases := []struct {
-		name    string
-		addr    string
-		wantErr error
-	}{
-		{
-			name:    "valid address",
-			addr:    "http://localhost:8082",
-			wantErr: nil,
-		},
-		{
-			name:    "invalid address",
-			addr:    "localhost:8082",
-			wantErr: gateway.ErrInvalidURL,
-		},
+	// register the server's address (host+port) with the registry
+	reg := memory.New()
+	_, serverHostPort, _ := strings.Cut(server.URL, "://")
+	err := reg.Register(t.Context(), discovery.RatingServiceName, discovery.GenerateInstanceID(), serverHostPort)
+	if err != nil {
+		t.Fatal(err)
 	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			_, err := rating.NewGateway(tc.addr)
-			if tc.wantErr == nil {
-				require.NoError(t, err)
-			} else {
-				require.ErrorIs(t, err, tc.wantErr)
-			}
-		})
-	}
+	return reg
 }
 
 func TestGetMovieRating(t *testing.T) {
-	server := newTestServerGET(t, http.StatusOK, false)
-	gw, err := rating.NewGateway(server.URL)
-	require.NoError(t, err)
+	reg := registryWithTestServerGET(t, http.StatusOK, false)
+	gw := rating.NewGateway(reg)
 
 	data, err := gw.GetMovieRating(t.Context(), testMovieID)
 	require.NoError(t, err)
@@ -155,11 +143,10 @@ func TestGetMovieRating_WithErrors(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			server := newTestServerGET(t, tc.code, tc.invalidResp)
-			gw, err := rating.NewGateway(server.URL)
-			require.NoError(t, err)
+			reg := registryWithTestServerGET(t, tc.code, tc.invalidResp)
+			gw := rating.NewGateway(reg)
 
-			_, err = gw.GetMovieRating(t.Context(), testMovieID)
+			_, err := gw.GetMovieRating(t.Context(), testMovieID)
 			require.Error(t, err)
 
 			// check expected error
@@ -179,11 +166,10 @@ func TestGetMovieRating_WithErrors(t *testing.T) {
 }
 
 func TestPUTMovieRating(t *testing.T) {
-	server := newTestServerPUT(t, http.StatusOK)
-	gw, err := rating.NewGateway(server.URL)
-	require.NoError(t, err)
+	reg := registryWithTestServerPUT(t, http.StatusOK)
+	gw := rating.NewGateway(reg)
 
-	err = gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
+	err := gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
 	require.NoError(t, err)
 }
 
@@ -218,11 +204,10 @@ func TestPUTMovieRating_WithErrors(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			server := newTestServerPUT(t, tc.code)
-			gw, err := rating.NewGateway(server.URL)
-			require.NoError(t, err)
+			reg := registryWithTestServerPUT(t, tc.code)
+			gw := rating.NewGateway(reg)
 
-			err = gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
+			err := gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
 			require.Error(t, err)
 
 			// check expected error

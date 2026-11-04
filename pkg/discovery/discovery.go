@@ -3,6 +3,13 @@ package discovery
 import (
 	"context"
 	"errors"
+	"uuid"
+)
+
+const (
+	RatingServiceName   = "rating"
+	MetadataServiceName = "metadata"
+	MovieAPIServiceName = "movieapi"
 )
 
 // ErrNotFound is returned when no matching service or instance is registered.
@@ -26,4 +33,9 @@ type ServiceRegistry interface {
 	// [ServiceRegistry.ServiceAddresses].
 	// It returns [ErrNotFound] if the instance is not registered.
 	ReportHealthy(ctx context.Context, service, instance string) error
+}
+
+// GenerateInstanceID returns a unique instance ID.
+func GenerateInstanceID() string {
+	return uuid.New().String()
 }

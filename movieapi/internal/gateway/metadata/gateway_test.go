@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
+	"github.com/faizan2786/movie-backend/pkg/discovery"
+	"github.com/faizan2786/movie-backend/pkg/discovery/memory"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +24,7 @@ var testData = model.Metadata{
 	ReleaseYear: 2026,
 }
 
-func getTestServer(t *testing.T, statusCode int, sendInvalidResp bool) *httptest.Server {
+func registryWithTestServer(t *testing.T, statusCode int, sendInvalidResp bool) discovery.ServiceRegistry {
 	t.Helper()
 
 	const expectedPath = "/" + testID
@@ -42,43 +45,20 @@ func getTestServer(t *testing.T, statusCode int, sendInvalidResp bool) *httptest
 	server := httptest.NewTestServer(t, handler)
 	server.Start()
 	t.Cleanup(server.Close)
-	return server
-}
 
-func TestNewGateway(t *testing.T) {
-	testCases := []struct {
-		name    string
-		addr    string
-		wantErr error
-	}{
-		{
-			name:    "valid address",
-			addr:    "http://localhost:8081",
-			wantErr: nil,
-		},
-		{
-			name:    "invalid address",
-			addr:    "localhost:8081",
-			wantErr: gateway.ErrInvalidURL,
-		},
+	// register the server's address (host+port) with the registry
+	reg := memory.New()
+	_, serverHostPort, _ := strings.Cut(server.URL, "://")
+	err := reg.Register(t.Context(), discovery.MetadataServiceName, discovery.GenerateInstanceID(), serverHostPort)
+	if err != nil {
+		t.Fatal(err)
 	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			_, err := metadata.NewGateway(tc.addr)
-			if tc.wantErr == nil {
-				require.NoError(t, err)
-			} else {
-				require.ErrorIs(t, err, tc.wantErr)
-			}
-		})
-	}
+	return reg
 }
 
 func TestGetMetadataValid(t *testing.T) {
-	server := getTestServer(t, http.StatusOK, false)
-	gw, err := metadata.NewGateway(server.URL)
-	require.NoError(t, err)
+	reg := registryWithTestServer(t, http.StatusOK, false)
+	gw := metadata.NewGateway(reg)
 
 	data, err := gw.GetMetadata(t.Context(), testID)
 	require.NoError(t, err)
@@ -118,11 +98,10 @@ func TestGetMetadataWithErrors(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			server := getTestServer(t, tc.code, tc.invalidResp)
-			gw, err := metadata.NewGateway(server.URL)
-			require.NoError(t, err)
+			reg := registryWithTestServer(t, tc.code, tc.invalidResp)
+			gw := metadata.NewGateway(reg)
 
-			_, err = gw.GetMetadata(t.Context(), testID)
+			_, err := gw.GetMetadata(t.Context(), testID)
 			require.Error(t, err)
 
 			// check expected error

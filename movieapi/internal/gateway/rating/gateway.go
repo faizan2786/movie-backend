@@ -12,24 +12,22 @@ import (
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
+	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
 
-// Gateway is a gateway to communicate with the metadata service.
+const defaultScheme string = "http"
+
+// Gateway is a gateway to communicate with the rating service.
 type Gateway struct {
 	// the http client
 	client *http.Client
 
-	// URL of the metadata service
-	url *url.URL
+	// registry to discover the rating service instances
+	registry discovery.ServiceRegistry
 }
 
-// NewGateway returns a new [Gateway] to the metadata service running at given address.
-func NewGateway(addr string) (*Gateway, error) {
-	serviceURL, err := gateway.ParseURL(addr)
-	if err != nil {
-		return nil, err
-	}
-
+// NewGateway returns a new [Gateway] to the rating service discovered via given registry.
+func NewGateway(r discovery.ServiceRegistry) *Gateway {
 	return &Gateway{
 		client: &http.Client{
 			Timeout: 5 * time.Second,
@@ -38,8 +36,8 @@ func NewGateway(addr string) (*Gateway, error) {
 				return http.ErrUseLastResponse
 			},
 		},
-		url: serviceURL,
-	}, nil
+		registry: r,
+	}
 }
 
 // GetMovieRating returns aggregated [model.Rating] for a movie with given id.
@@ -47,8 +45,13 @@ func NewGateway(addr string) (*Gateway, error) {
 func (g *Gateway) GetMovieRating(ctx context.Context, movieID model.ID) (model.RatingValue, error) {
 	var rating model.RatingValue
 
+	serviceURL, err := gateway.GetServiceURL(ctx, discovery.RatingServiceName, g.registry, defaultScheme)
+	if err != nil {
+		return rating, err
+	}
+
 	// make a GET request to /movies/<movieID> endpoint
-	u := g.url.JoinPath("movies", url.PathEscape(string(movieID)))
+	u := serviceURL.JoinPath("movies", url.PathEscape(string(movieID)))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return rating, fmt.Errorf("can not create a new HTTP request: %w", err)
@@ -87,8 +90,13 @@ func (g *Gateway) SubmitMovieRating(ctx context.Context, movieID model.ID, ratin
 	}
 	body := bytes.NewReader(data)
 
+	serviceURL, err := gateway.GetServiceURL(ctx, discovery.RatingServiceName, g.registry, defaultScheme)
+	if err != nil {
+		return err
+	}
+
 	// make a PUT request to /movies/<movieID> endpoint with above body
-	u := g.url.JoinPath("movies", url.PathEscape(string(movieID)))
+	u := serviceURL.JoinPath("movies", url.PathEscape(string(movieID)))
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), body)
 	if err != nil {
 		return fmt.Errorf("can not create a new HTTP request: %w", err)

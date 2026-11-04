@@ -11,24 +11,22 @@ import (
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
+	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
+
+const defaultScheme string = "http"
 
 // Gateway is a gateway to communicate with the metadata service.
 type Gateway struct {
 	// the http client
 	client *http.Client
 
-	// URL of the metadata service
-	url *url.URL
+	// registry to discover the metadata service instances
+	registry discovery.ServiceRegistry
 }
 
-// NewGateway returns a new [Gateway] to the metadata service running at given address.
-func NewGateway(addr string) (*Gateway, error) {
-	serviceURL, err := gateway.ParseURL(addr)
-	if err != nil {
-		return nil, err
-	}
-
+// NewGateway returns a new [Gateway] to the metadata service discovered via given registry.
+func NewGateway(r discovery.ServiceRegistry) *Gateway {
 	return &Gateway{
 		client: &http.Client{
 			Timeout: 5 * time.Second,
@@ -37,8 +35,8 @@ func NewGateway(addr string) (*Gateway, error) {
 				return http.ErrUseLastResponse
 			},
 		},
-		url: serviceURL,
-	}, nil
+		registry: r,
+	}
 }
 
 // GetMetadata returns [model.Metadata] for a movie with given id.
@@ -46,8 +44,13 @@ func NewGateway(addr string) (*Gateway, error) {
 func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error) {
 	var data model.Metadata
 
+	serviceURL, err := gateway.GetServiceURL(ctx, discovery.MetadataServiceName, g.registry, defaultScheme)
+	if err != nil {
+		return data, err
+	}
+
 	// make a GET request with ID to the service
-	u := g.url.JoinPath(url.PathEscape(string(id)))
+	u := serviceURL.JoinPath(url.PathEscape(string(id)))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return data, fmt.Errorf("can not create a new HTTP request: %w", err)

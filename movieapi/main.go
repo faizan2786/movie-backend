@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -8,21 +9,29 @@ import (
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata"
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
 	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
+	"github.com/faizan2786/movie-backend/pkg/discovery"
+	registry "github.com/faizan2786/movie-backend/pkg/discovery/memory"
 )
 
 const port = "8083"
 
 func main() {
 
-	metadataGw, err := metadata.NewGateway("http://localhost:8081")
+	// register an instance of metadata and rating service
+	reg := registry.New()
+	err := reg.Register(context.Background(), discovery.MetadataServiceName, discovery.GenerateInstanceID(), "localhost:8081")
 	if err != nil {
 		panic(err)
 	}
-	ratingGw, err := rating.NewGateway("http://localhost:8082")
+	err = reg.Register(context.Background(), discovery.RatingServiceName, discovery.GenerateInstanceID(), "localhost:8082")
 	if err != nil {
 		panic(err)
 	}
+
+	metadataGw := metadata.NewGateway(reg)
+	ratingGw := rating.NewGateway(reg)
 	controller := controller.New(metadataGw, ratingGw)
+
 	handler := handler.New(controller)
 
 	mux := http.NewServeMux()

@@ -136,7 +136,7 @@ func TestGetInstances_AfterDeregisteringAll(t *testing.T) {
 func TestGetInstances_WithInActivity(t *testing.T) {
 	t.Parallel()
 
-	// advance time more than 5 seconds (i.e. maxInactiveTime) and verify the returned result
+	// advance time past maxInActivePeriod and verify the returned result
 	synctest.Test(t, func(t *testing.T) {
 		registry := InitRegistry(t)
 
@@ -147,14 +147,15 @@ func TestGetInstances_WithInActivity(t *testing.T) {
 		addrs, _ = registry.ServiceAddresses(t.Context(), "service-3")
 		require.Len(t, addrs, 1)
 
-		// perfrom health checks after 2 seconds
-		time.Sleep(2 * time.Second)
+		// perform health checks halfway through maxInActivePeriod
+		time.Sleep(maxInActivePeriod / 2)
 		registry.ReportHealthy(t.Context(), "service-1", "instance-1")
 		registry.ReportHealthy(t.Context(), "service-1", "instance-2")
 		registry.ReportHealthy(t.Context(), "service-2", "instance-1")
 
-		// further advance 4 seconds
-		time.Sleep(4 * time.Second)
+		// further advance just past the maxInActivePeriod mark from the start
+		// (the above 3 reported instances will still be within their period)
+		time.Sleep(maxInActivePeriod/2 + time.Second)
 
 		// now, the number of active instances for service-1 should be 2,
 		// active instances for service-2 should be 1 and

@@ -10,7 +10,7 @@ import (
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
 
-var maxInActivePeriod = 5 * time.Second
+var maxInActivePeriod = 300 * time.Second
 
 // instance is a service instance
 type instance struct {
