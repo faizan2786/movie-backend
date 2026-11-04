@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata"
@@ -17,8 +18,9 @@ const port = "8083"
 
 func main() {
 
-	// register an instance of metadata and rating service
 	reg := registry.New()
+
+	// register an instance of metadata and rating service
 	err := reg.Register(context.Background(), discovery.MetadataServiceName, discovery.GenerateInstanceID(), "localhost:8081")
 	if err != nil {
 		panic(err)
@@ -27,6 +29,29 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// register the service with registry with periodic health-checks
+	instanceID := discovery.GenerateInstanceID()
+	err = reg.Register(context.Background(), discovery.MovieAPIServiceName, instanceID, "localhost:"+port)
+	if err != nil {
+		panic(err)
+	}
+	defer reg.Deregister(context.Background(), discovery.MovieAPIServiceName, instanceID)
+
+	// heartbeat
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		tCh := time.Tick(3 * time.Second)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tCh:
+				reg.ReportHealthy(ctx, discovery.MovieAPIServiceName, instanceID)
+			}
+		}
+	}()
 
 	metadataGw := metadata.NewGateway(reg)
 	ratingGw := rating.NewGateway(reg)
@@ -42,6 +67,6 @@ func main() {
 	log.Printf("starting movieapi service on port: %s\n", port)
 	err = http.ListenAndServe("localhost:"+port, mux)
 	if err != nil {
-		log.Fatalf("movieapi service stopped")
+		panic(err)
 	}
 }
