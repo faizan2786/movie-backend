@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"log"
 	"net/http"
@@ -38,7 +38,7 @@ func (h *Handler) GetRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(rating)
+	err = json.MarshalWrite(w, rating)
 	if err != nil {
 		log.Printf("GetRating: type=%q, id=%q, rating=%f, error=json response encode error: %s", recordType, recordID, rating, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (h *Handler) PutRating(w http.ResponseWriter, r *http.Request) {
 
 	// decode rating data from the request body
 	var rating model.Rating
-	err := json.NewDecoder(r.Body).Decode(&rating)
+	err := json.UnmarshalRead(r.Body, &rating)
 	if err != nil {
 		log.Printf("PutRating: type=%q, id=%q, error=json body decode error: %s", recordType, recordID, err)
 		w.WriteHeader(http.StatusBadRequest)

@@ -2,7 +2,7 @@ package metadata
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log"
 	"net/http"
@@ -72,7 +72,7 @@ func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata,
 	}
 
 	// read & decode the json response body
-	err = json.NewDecoder(res.Body).Decode(&data)
+	err = json.UnmarshalRead(res.Body, &data)
 	if err != nil {
 		return data, fmt.Errorf("json response decode error: %w", err)
 	}

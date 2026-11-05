@@ -1,7 +1,7 @@
 package rating_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -40,9 +40,9 @@ func registryWithTestServerGET(t *testing.T, statusCode int, sendInvalidResp boo
 		// write the given response code
 		w.WriteHeader(statusCode)
 		if sendInvalidResp {
-			json.NewEncoder(w).Encode(`{`) // send invalid data
+			json.MarshalWrite(w, "{")
 		} else {
-			json.NewEncoder(w).Encode(testDataGET)
+			json.MarshalWrite(w, testDataGET)
 		}
 	}
 	server := httptest.NewTestServer(t, handler)
@@ -73,7 +73,7 @@ func registryWithTestServerPUT(t *testing.T, statusCode int) discovery.ServiceRe
 
 		// verify the request body is correct
 		var data model.Rating
-		err := json.NewDecoder(r.Body).Decode(&data)
+		err := json.UnmarshalRead(r.Body, &data)
 		if err != nil {
 			t.Errorf("got: PUT request body decode error = %s; want: no errors", err)
 		}

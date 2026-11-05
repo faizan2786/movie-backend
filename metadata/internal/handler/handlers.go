@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"log"
 	"net/http"
@@ -46,7 +46,7 @@ func (h *Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
 
 	// json encode the response and write it back
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(data)
+	err = json.MarshalWrite(w, data)
 	if err != nil {
 		log.Printf("GetMetadata: json encoding error; id = %s; error = %s", id, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -68,7 +68,7 @@ func (h *Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
 
 	// decode metadata from the body (assuming body is in json format)
 	var data model.Metadata
-	err := json.NewDecoder(r.Body).Decode(&data)
+	err := json.UnmarshalRead(r.Body, &data)
 	data.ID = id // use the id given as the path parameter
 	if err != nil {
 		log.Printf("PutMetadata: json body decoding error; id = %s; error = %s", id, err)

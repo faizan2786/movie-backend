@@ -3,7 +3,7 @@ package rating
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log"
 	"net/http"
@@ -73,7 +73,7 @@ func (g *Gateway) GetMovieRating(ctx context.Context, movieID model.ID) (model.R
 	}
 
 	// read & decode the json response body
-	err = json.NewDecoder(res.Body).Decode(&rating)
+	err = json.UnmarshalRead(res.Body, &rating)
 	if err != nil {
 		return rating, fmt.Errorf("json response decode error: %w", err)
 	}

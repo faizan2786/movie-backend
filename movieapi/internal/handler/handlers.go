@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"log"
 	"net/http"
@@ -41,7 +41,7 @@ func (h *Handler) GetMovie(w http.ResponseWriter, r *http.Request) {
 
 	// send the response in json format
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(movie)
+	err = json.MarshalWrite(w, movie)
 	if err != nil {
 		log.Printf("GetMovie: json response encode error: error=%s; id=%s", err, id)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -55,7 +55,7 @@ func (h *Handler) PutMovieRating(w http.ResponseWriter, r *http.Request) {
 
 	// deserialize the request body to get the rating value
 	var rating model.Rating
-	err := json.NewDecoder(r.Body).Decode(&rating)
+	err := json.UnmarshalRead(r.Body, &rating)
 	if err != nil {
 		log.Printf("PutMovieRating: json request decode error: error=%s", err)
 		w.WriteHeader(http.StatusBadRequest)

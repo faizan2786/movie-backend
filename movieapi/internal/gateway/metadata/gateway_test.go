@@ -1,7 +1,7 @@
 package metadata_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -37,9 +37,9 @@ func registryWithTestServer(t *testing.T, statusCode int, sendInvalidResp bool) 
 		// write the given response code
 		w.WriteHeader(statusCode)
 		if sendInvalidResp {
-			json.NewEncoder(w).Encode(`{}`) // send invalid data
+			json.MarshalWrite(w, "{}") // send invalid data
 		} else {
-			json.NewEncoder(w).Encode(testData)
+			json.MarshalWrite(w, testData)
 		}
 	}
 	server := httptest.NewTestServer(t, handler)
