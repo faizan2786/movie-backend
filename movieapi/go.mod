@@ -3,7 +3,7 @@ module github.com/faizan2786/movie-backend/movieapi
 go 1.27.1
 
 require (
-	github.com/faizan2786/movie-backend v0.0.0-20261109122228-666ec3f2ef5f
+	github.com/faizan2786/movie-backend v0.1.0
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/sync v0.24.0

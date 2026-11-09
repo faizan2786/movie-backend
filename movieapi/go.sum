@@ -1,5 +1,5 @@
-github.com/faizan2786/movie-backend v0.0.0-20261109122228-666ec3f2ef5f h1:ZUeQh2ffO/CF1M8ffRR03SSdeJ8ZChkXUOGv3oJJwVU=
-github.com/faizan2786/movie-backend v0.0.0-20261109122228-666ec3f2ef5f/go.mod h1:K4AX8DWVIVYzJXmDh9D79OdFOfxVtyr+qHWxDES6zkQ=
+github.com/faizan2786/movie-backend v0.1.0 h1:UkywNw7yMd1sQEH7y2Q20ziSRxXoSftNTV6p2KBHvyI=
+github.com/faizan2786/movie-backend v0.1.0/go.mod h1:K4AX8DWVIVYzJXmDh9D79OdFOfxVtyr+qHWxDES6zkQ=
 github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 go.uber.org/mock v0.6.0 h1:hyF9dfmbgIX5EfOdasqLsWD6xqpNZlXblLB/Dbnwv3Y=
