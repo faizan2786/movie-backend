@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,39 +16,58 @@ import (
 	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/memory"
+	"github.com/faizan2786/movie-backend/pkg/server"
 )
 
 const (
-	port            = "8083"
-	addr            = "localhost:" + port
-	shutdownTimeout = 5 * time.Second
+	port = "8083"
+	addr = "localhost:" + port
+
+	heartbeatInterval       = 1 * time.Second
+	deregisterTimeout       = 3 * time.Second
+	gracefulShutdownTimeout = 5 * time.Second
 )
 
-type deregisterFunc = discovery.DeregisterFunc
+var srvName = discovery.MovieAPIServiceName
 
 func main() {
-
-	reg := registry.New()
-
-	// register an instance of metadata and rating service
-	err := reg.Register(context.Background(), discovery.MetadataServiceName, discovery.GenerateInstanceID(), "localhost:8081")
-	if err != nil {
-		panic(err)
+	if err := run(); err != nil {
+		log.Fatalln(err)
 	}
+}
 
-	err = reg.Register(context.Background(), discovery.RatingServiceName, discovery.GenerateInstanceID(), "localhost:8082")
-	if err != nil {
-		panic(err)
-	}
+func run() error {
 
-	// get cancellable context for Ctrl+C / SIGTERM signals
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	context.AfterFunc(ctx, stop) // stop receiving signal notifications as soon as possible (so a second Ctrl+C forces quit)
 
-	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, discovery.MovieAPIServiceName, addr, time.Second)
+	// 1) register the service with registry
+	reg := registry.New()
+	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, srvName, addr, heartbeatInterval)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("register service: %w", err)
 	}
+
+	// also register metadata and rating services as we are using an in-memory registry
+	reg.Register(ctx, discovery.MetadataServiceName, discovery.GenerateInstanceID(), "localhost:8081")
+	reg.Register(ctx, discovery.RatingServiceName, discovery.GenerateInstanceID(), "localhost:8082")
+
+	// 2) register API handlers
+	mux := registerHandlers(reg)
+
+	// 3) serve until a shutdown signal is received, then deregister & shut down gracefully
+	srv := &http.Server{Addr: addr, Handler: mux}
+
+	deregisterFunc := func() {
+		ctx, cancel := context.WithTimeout(context.Background(), deregisterTimeout)
+		defer cancel()
+		deregister(ctx)
+	}
+	return server.Run(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
+}
+
+func registerHandlers(reg discovery.ServiceRegistry) http.Handler {
 
 	// Intialise the service handler
 	metadataGw := metadata.NewGateway(reg)
@@ -60,43 +80,5 @@ func main() {
 	mux.HandleFunc("GET /movies/{id}", handler.GetMovie)
 	mux.HandleFunc("PUT /movies/{id}/ratings/{userID}", handler.PutMovieRating)
 
-	// start the server
-	cancelledServer := serveUntilCancelled(ctx, mux, deregister)
-
-	// restore default signal handling so a second Ctrl+C applies a force-quit
-	stop()
-	shutdown(cancelledServer, deregister)
-}
-
-// serveUntilCancelled creates a new http server and start serving requests
-// until an explicit cancellation signal is received.
-func serveUntilCancelled(ctx context.Context, mux http.Handler, deregister deregisterFunc) *http.Server {
-	// start the web server
-	log.Printf("starting server at port: %s\n", port)
-	srv := &http.Server{Addr: addr, Handler: mux}
-	errCh := make(chan error, 1)
-	go func() { errCh <- srv.ListenAndServe() }()
-
-	select {
-	case <-ctx.Done():
-		return srv
-	case err := <-errCh:
-		log.Printf("cannot start server at port: %s\n", port)
-		deregister(ctx)
-		panic(err)
-	}
-}
-
-// shutdown gracefully shuts down the http server
-func shutdown(srv *http.Server, deregister deregisterFunc) {
-	// deregister first so no new traffic is routed to this service,
-	// then stop accepting new requests
-	// (drain any in-flight requests by waiting for shutdownTimeout)
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
-	deregister(timeoutCtx)
-	log.Println("shutting down movieapi service")
-	if err := srv.Shutdown(timeoutCtx); err != nil {
-		log.Printf("shutdown server: %v", err)
-	}
+	return mux
 }

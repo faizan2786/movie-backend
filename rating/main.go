@@ -59,7 +59,6 @@ func run() error {
 		defer cancel()
 		deregister(ctx)
 	}
-
 	return server.Run(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
 }
 
