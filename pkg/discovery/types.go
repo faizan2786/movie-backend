@@ -3,7 +3,6 @@ package discovery
 import (
 	"context"
 	"errors"
-	"uuid"
 )
 
 const (
@@ -33,9 +32,4 @@ type ServiceRegistry interface {
 	// [ServiceRegistry.ServiceAddresses].
 	// It returns [ErrNotFound] if the instance is not registered.
 	ReportHealthy(ctx context.Context, service, instance string) error
-}
-
-// GenerateInstanceID returns a unique instance ID.
-func GenerateInstanceID() string {
-	return uuid.New().String()
 }

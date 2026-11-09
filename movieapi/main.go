@@ -23,7 +23,7 @@ const (
 	shutdownTimeout = 5 * time.Second
 )
 
-type deregisterFunc func(context.Context)
+type deregisterFunc = discovery.DeregisterFunc
 
 func main() {
 
@@ -45,7 +45,10 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	deregister := registerAndSendHeartbeat(ctx, reg)
+	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, discovery.MovieAPIServiceName, addr, time.Second)
+	if err != nil {
+		panic(err)
+	}
 
 	// Intialise the service handler
 	metadataGw := metadata.NewGateway(reg)
@@ -66,47 +69,11 @@ func main() {
 	shutdown(cancelledServer, deregister)
 }
 
-// registerAndSendHeartbeat registers the service and sends periodic heartbeats.
-// it returns a function to deregister the service.
-func registerAndSendHeartbeat(ctx context.Context, r discovery.ServiceRegistry) deregisterFunc {
-	// register the service with registry with periodic health-checks
-	instanceID := discovery.GenerateInstanceID()
-	err := r.Register(context.Background(), discovery.MovieAPIServiceName, instanceID, addr)
-	if err != nil {
-		panic(err)
-	}
-
-	// heartbeat
-	go func() {
-		tCh := time.Tick(3 * time.Second)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tCh:
-				err := r.ReportHealthy(ctx, discovery.MovieAPIServiceName, instanceID)
-				if err != nil {
-					log.Printf("movieapi failed to register heartbeat: %s", err)
-				}
-			}
-		}
-	}()
-
-	deregister := func(ctx context.Context) {
-		log.Printf("deregister instance for %s", discovery.MovieAPIServiceName)
-		if err := r.Deregister(ctx, discovery.MovieAPIServiceName, instanceID); err != nil {
-			log.Printf("movieapi deregister: %v", err)
-		}
-	}
-
-	return deregister
-}
-
 // serveUntilCancelled creates a new http server and start serving requests
 // until an explicit cancellation signal is received.
 func serveUntilCancelled(ctx context.Context, mux http.Handler, deregister deregisterFunc) *http.Server {
 	// start the web server
-	log.Printf("starting movieapi service on port: %s\n", port)
+	log.Printf("starting server at port: %s\n", port)
 	srv := &http.Server{Addr: addr, Handler: mux}
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.ListenAndServe() }()
@@ -114,7 +81,7 @@ func serveUntilCancelled(ctx context.Context, mux http.Handler, deregister dereg
 	select {
 	case <-ctx.Done():
 	case err := <-errCh:
-		log.Printf("cannot start server on port: %s\n", port)
+		log.Printf("cannot start server at port: %s\n", port)
 		deregister(ctx)
 		panic(err)
 	}
