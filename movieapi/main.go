@@ -35,7 +35,6 @@ func main() {
 		panic(err)
 	}
 
-	log.Printf("register instance for %s", discovery.MovieAPIServiceName)
 	err = reg.Register(context.Background(), discovery.RatingServiceName, discovery.GenerateInstanceID(), "localhost:8082")
 	if err != nil {
 		panic(err)
@@ -80,13 +79,12 @@ func serveUntilCancelled(ctx context.Context, mux http.Handler, deregister dereg
 
 	select {
 	case <-ctx.Done():
+		return srv
 	case err := <-errCh:
 		log.Printf("cannot start server at port: %s\n", port)
 		deregister(ctx)
 		panic(err)
 	}
-
-	return srv
 }
 
 // shutdown gracefully shuts down the http server
@@ -95,10 +93,10 @@ func shutdown(srv *http.Server, deregister deregisterFunc) {
 	// then stop accepting new requests
 	// (drain any in-flight requests by waiting for shutdownTimeout)
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
 	deregister(timeoutCtx)
 	log.Println("shutting down movieapi service")
-	defer cancel()
 	if err := srv.Shutdown(timeoutCtx); err != nil {
-		log.Printf("movieapi shutdown: %v", err)
+		log.Printf("shutdown server: %v", err)
 	}
 }

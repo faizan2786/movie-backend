@@ -5,12 +5,15 @@ import (
 	"log"
 	"sync"
 
+	"github.com/faizan2786/movie-backend/rating/internal/controller"
 	"github.com/faizan2786/movie-backend/rating/internal/repository"
 	"github.com/faizan2786/movie-backend/rating/pkg/model"
 )
 
 // ratingSum represents a running sum of user ratings per record type and record ID.
 type ratingSum uint64
+
+var _ controller.Repository = (*DB)(nil)
 
 // DB is an in-memory database for the rating service.
 // Its zero value is not ready for use, use [NewDB] to create a DB.

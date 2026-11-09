@@ -20,6 +20,7 @@ type DeregisterFunc func(context.Context)
 func RegisterWithHeartbeat(ctx context.Context, r ServiceRegistry, serviceName string, hostPort string, period time.Duration) (DeregisterFunc, error) {
 	// register the service with registry with periodic health-checks
 	instanceID := GenerateInstanceID()
+	log.Printf("register instance for %s service", serviceName)
 	err := r.Register(context.Background(), serviceName, instanceID, hostPort)
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func RegisterWithHeartbeat(ctx context.Context, r ServiceRegistry, serviceName s
 	}()
 
 	deregister := func(ctx context.Context) {
-		log.Printf("deregister instance for %s", serviceName)
+		log.Printf("deregister instance for %s service", serviceName)
 		if err := r.Deregister(ctx, serviceName, instanceID); err != nil {
 			log.Printf("deregister: %v", err)
 		}
