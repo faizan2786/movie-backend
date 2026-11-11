@@ -2,7 +2,10 @@ package discovery
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net"
+	"strconv"
 	"time"
 	"uuid"
 )
@@ -21,7 +24,7 @@ func RegisterWithHeartbeat(ctx context.Context, r ServiceRegistry, serviceName s
 	// register the service with registry with periodic health-checks
 	instanceID := GenerateInstanceID()
 	log.Printf("register instance for %s service", serviceName)
-	err := r.Register(context.Background(), serviceName, instanceID, hostPort)
+	err := r.Register(ctx, serviceName, instanceID, hostPort)
 	if err != nil {
 		return nil, err
 	}
@@ -50,4 +53,21 @@ func RegisterWithHeartbeat(ctx context.Context, r ServiceRegistry, serviceName s
 	}
 
 	return deregister, nil
+}
+
+func ParseHostPort(hostport string) (host string, port int, err error) {
+	host, p, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to parse address: %w", ErrInvalidHostPort)
+	}
+	if host == "" || p == "" {
+		return "", 0, fmt.Errorf("address %q must have both host and port: %w", hostport, ErrInvalidHostPort)
+	}
+
+	port, err = strconv.Atoi(p)
+	if err != nil {
+		return "", 0, fmt.Errorf("port %q must be a numeric value: %w", p, ErrInvalidHostPort)
+	}
+
+	return host, port, nil
 }

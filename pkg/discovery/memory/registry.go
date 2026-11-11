@@ -3,7 +3,6 @@ package memory
 import (
 	"context"
 	"fmt"
-	"net"
 	"sync"
 	"time"
 
@@ -34,12 +33,9 @@ func New() *Registry {
 }
 
 func (r *Registry) Register(_ context.Context, serviceName string, instanceId string, hostport string) error {
-	h, p, err := net.SplitHostPort(hostport)
+	_, _, err := discovery.ParseHostPort(hostport)
 	if err != nil {
-		return fmt.Errorf("failed to parse address: %w", err)
-	}
-	if h == "" || p == "" {
-		return fmt.Errorf("address %q must have both host and port", hostport)
+		return err
 	}
 
 	r.mu.Lock()

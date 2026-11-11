@@ -9,10 +9,13 @@ const (
 	RatingServiceName   = "rating"
 	MetadataServiceName = "metadata"
 	MovieAPIServiceName = "movieapi"
+
+	DefaultConsulAddr = "localhost:8500"
 )
 
 // ErrNotFound is returned when no matching service or instance is registered.
 var ErrNotFound = errors.New("not found")
+var ErrInvalidHostPort = errors.New("hostport not valid")
 
 // ServiceRegistry defines a service registry interface.
 type ServiceRegistry interface {
