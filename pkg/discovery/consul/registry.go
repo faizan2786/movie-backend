@@ -36,7 +36,7 @@ func (r *Registry) Register(_ context.Context, service string, instance string, 
 		return err
 	}
 
-	// register service with the local consul agent (i.e. the consul agent running locally)
+	// register service with a local consul agent (i.e. the consul agent running locally)
 	err = r.client.Agent().ServiceRegister(&consulapi.AgentServiceRegistration{
 		Name:    service,
 		ID:      instance,
@@ -72,8 +72,10 @@ func (r *Registry) Deregister(ctx context.Context, service string, instance stri
 func (r *Registry) ServiceAddresses(ctx context.Context, service string) ([]string, error) {
 	var addrs []string
 
-	// get entries for healthy services
-	entries, _, err := r.client.Health().Service(service, "", true /* passingOnly */, nil)
+	// query the cluster-wide health catalog (not the local agent's own registrations)
+	// for fetching all healthy instances across the registry;
+	// (the local agent forwards this request to the consul servers)
+	entries, _, err := r.client.Health().Service(service, "", true /* passing status Only */, nil)
 	if err != nil {
 		return nil, fmt.Errorf("fetch healthy services: %w", err)
 	}
@@ -92,7 +94,7 @@ func (r *Registry) ServiceAddresses(ctx context.Context, service string) ([]stri
 func (r *Registry) ReportHealthy(ctx context.Context, service string, instance string) error {
 	err := r.client.Agent().UpdateTTL(instance, "", consulapi.HealthPassing)
 	if isNotFoundErr(err) {
-		return fmt.Errorf("heport instance %q health: %w", instance, discovery.ErrNotFound)
+		return fmt.Errorf("report instance %q health: %w", instance, discovery.ErrNotFound)
 	}
 	if err != nil {
 		return fmt.Errorf("instance %q healthcheck for %q service: %w", instance, service, err)
