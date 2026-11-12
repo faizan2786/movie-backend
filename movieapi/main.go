@@ -15,7 +15,7 @@ import (
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
 	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
-	registry "github.com/faizan2786/movie-backend/pkg/discovery/memory"
+	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
 )
 
@@ -43,15 +43,15 @@ func run() error {
 	context.AfterFunc(ctx, stop) // stop receiving signal notifications as soon as possible (so a second Ctrl+C forces quit)
 
 	// 1) register the service with registry
-	reg := registry.New()
+	reg, err := registry.New(discovery.DefaultConsulAddr)
+	if err != nil {
+		return fmt.Errorf("create consul registry: %w", err)
+	}
+
 	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, srvName, addr, heartbeatInterval)
 	if err != nil {
 		return fmt.Errorf("register service: %w", err)
 	}
-
-	// also register metadata and rating services as we are using an in-memory registry
-	reg.Register(ctx, discovery.MetadataServiceName, discovery.GenerateInstanceID(), "localhost:8081")
-	reg.Register(ctx, discovery.RatingServiceName, discovery.GenerateInstanceID(), "localhost:8082")
 
 	// 2) register API handlers
 	mux := registerHandlers(reg)

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/faizan2786/movie-backend/pkg/discovery"
-	registry "github.com/faizan2786/movie-backend/pkg/discovery/memory"
+	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
 	"github.com/faizan2786/movie-backend/rating/internal/controller"
 	"github.com/faizan2786/movie-backend/rating/internal/handler"
@@ -42,7 +42,11 @@ func run() error {
 	context.AfterFunc(ctx, stop) // stop receiving signal notifications as soon as possible (so a second Ctrl+C forces quit)
 
 	// 1) register the service with registry.
-	reg := registry.New()
+	reg, err := registry.New(discovery.DefaultConsulAddr)
+	if err != nil {
+		return fmt.Errorf("create consul registry: %w", err)
+	}
+
 	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, srvName, addr, heartbeatInterval)
 	if err != nil {
 		return fmt.Errorf("register service: %w", err)
