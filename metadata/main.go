@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,13 +15,13 @@ import (
 	"github.com/faizan2786/movie-backend/metadata/internal/handler"
 	"github.com/faizan2786/movie-backend/metadata/internal/repository/memory"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
+
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
 )
 
 const (
-	port = "8081"
-	addr = "localhost:" + port
+	defaultPort = 8081
 
 	heartbeatInterval       = 1 * time.Second
 	deregisterTimeout       = 3 * time.Second
@@ -36,6 +37,11 @@ func main() {
 }
 
 func run() error {
+	var port int
+	flag.IntVar(&port, "port", defaultPort, "port to run the service at")
+	flag.Parse()
+
+	addr := fmt.Sprintf("%s:%d", "localhost", port)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

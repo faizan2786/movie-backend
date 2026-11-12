@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,8 +21,7 @@ import (
 )
 
 const (
-	port = "8083"
-	addr = "localhost:" + port
+	defaultPort = 8083
 
 	heartbeatInterval       = 1 * time.Second
 	deregisterTimeout       = 3 * time.Second
@@ -37,6 +37,11 @@ func main() {
 }
 
 func run() error {
+	var port int
+	flag.IntVar(&port, "port", defaultPort, "port to run the service at")
+	flag.Parse()
+
+	addr := fmt.Sprintf("%s:%d", "localhost", port)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
