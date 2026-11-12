@@ -25,12 +25,24 @@ Its design uses a **layered architecture**, separating the HTTP handling (i.e. A
 - `GET` returns 404 if the record has no ratings
 - Ratings are held in memory and are lost when the service stops
 
+## Startup & graceful shutdown
+
+- On startup, the service registers itself with Consul (at `localhost:8500`) as `rating` with a unique instance ID, then sends a heartbeat every second to keep the instance healthy
+- On `SIGINT` (Ctrl+C) or `SIGTERM`, it first deregisters the instance, so callers stop discovering it, and then shuts down gracefully, giving in-flight requests up to 5 seconds to finish before closing the remaining connections
+- A second Ctrl+C during shutdown forces the service to quit
+- If the server fails to start (e.g. the port is already in use), the instance is deregistered before the service exits
+
 ## Running
 
+Start the Consul server first (see the [root README](../README.md#service-discovery)), then:
+
 ```sh
-go run ./rating          # listens on localhost:8082
+go run ./rating                  # listens on localhost:8082
+go run ./rating -port 9082       # listens on localhost:9082
 go test -race ./rating/...
 ```
+
+Use the `-port` flag to run more than one instance; each registers separately with Consul. Each instance has its own in-memory store, so instances don't share data.
 
 ## Project structure
 

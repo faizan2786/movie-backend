@@ -24,11 +24,23 @@ Metadata is sent and returned as JSON:
 - `GET` returns 404 if the movie doesn't exist
 - Metadata is held in memory and is lost when the service stops
 
+## Startup & graceful shutdown
+
+- On startup, the service registers itself with Consul (at `localhost:8500`) as `metadata` with a unique instance ID, then sends a heartbeat every second to keep the instance healthy
+- On `SIGINT` (Ctrl+C) or `SIGTERM`, it first deregisters the instance, so callers stop discovering it, and then shuts down gracefully, giving in-flight requests up to 5 seconds to finish before closing the remaining connections
+- A second Ctrl+C during shutdown forces the service to quit
+- If the server fails to start (e.g. the port is already in use), the instance is deregistered before the service exits
+
 ## Running
 
+Start the Consul server first (see the [root README](../README.md#service-discovery)), then:
+
 ```sh
-go run ./metadata        # listens on localhost:8081
+go run ./metadata                # listens on localhost:8081
+go run ./metadata -port 9081     # listens on localhost:9081
 ```
+
+Use the `-port` flag to run more than one instance; each registers separately with Consul. Each instance has its own in-memory store, so instances don't share data.
 
 ## Project structure
 
