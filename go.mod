@@ -5,6 +5,7 @@ go 1.27.1
 require (
 	github.com/hashicorp/consul/api v1.35.0
 	github.com/stretchr/testify v1.12.1
+	google.golang.org/protobuf v1.36.8
 )
 
 require (

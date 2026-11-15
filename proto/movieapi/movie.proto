@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package movieapi;
+option go_package = "github.com/faizan2786/movie-backend/gen/movieapi";
+
+// Metadata is movie metadata.
+message Metadata {
+  string id = 1;
+  string title = 2;
+  optional int32 release_year = 3;
+  optional string description = 4;
+}
+
+// Movie is the info related to a movie.
+message Movie {
+  Metadata metadata = 1;
+  optional double rating = 2;
+}
