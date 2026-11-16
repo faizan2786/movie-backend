@@ -26,8 +26,8 @@ type Metadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	ReleaseYear   *int32                 `protobuf:"varint,3,opt,name=release_year,json=releaseYear,proto3,oneof" json:"release_year,omitempty"`
-	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	ReleaseYear   int32                  `protobuf:"varint,3,opt,name=release_year,json=releaseYear,proto3" json:"release_year,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -77,15 +77,15 @@ func (x *Metadata) GetTitle() string {
 }
 
 func (x *Metadata) GetReleaseYear() int32 {
-	if x != nil && x.ReleaseYear != nil {
-		return *x.ReleaseYear
+	if x != nil {
+		return x.ReleaseYear
 	}
 	return 0
 }
 
 func (x *Metadata) GetDescription() string {
-	if x != nil && x.Description != nil {
-		return *x.Description
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -94,7 +94,7 @@ func (x *Metadata) GetDescription() string {
 type Movie struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Metadata      *Metadata              `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Rating        *float64               `protobuf:"fixed64,2,opt,name=rating,proto3,oneof" json:"rating,omitempty"`
+	Rating        float64                `protobuf:"fixed64,2,opt,name=rating,proto3" json:"rating,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -137,8 +137,8 @@ func (x *Movie) GetMetadata() *Metadata {
 }
 
 func (x *Movie) GetRating() float64 {
-	if x != nil && x.Rating != nil {
-		return *x.Rating
+	if x != nil {
+		return x.Rating
 	}
 	return 0
 }
@@ -147,18 +147,15 @@ var File_movieapi_movie_proto protoreflect.FileDescriptor
 
 const file_movieapi_movie_proto_rawDesc = "" +
 	"\n" +
-	"\x14movieapi/movie.proto\x12\bmovieapi\"\xa0\x01\n" +
+	"\x14movieapi/movie.proto\x12\bmovieapi\"u\n" +
 	"\bMetadata\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12&\n" +
-	"\frelease_year\x18\x03 \x01(\x05H\x00R\vreleaseYear\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x04 \x01(\tH\x01R\vdescription\x88\x01\x01B\x0f\n" +
-	"\r_release_yearB\x0e\n" +
-	"\f_description\"_\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12!\n" +
+	"\frelease_year\x18\x03 \x01(\x05R\vreleaseYear\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"O\n" +
 	"\x05Movie\x12.\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x12.movieapi.MetadataR\bmetadata\x12\x1b\n" +
-	"\x06rating\x18\x02 \x01(\x01H\x00R\x06rating\x88\x01\x01B\t\n" +
-	"\a_ratingB2Z0github.com/faizan2786/movie-backend/gen/movieapib\x06proto3"
+	"\bmetadata\x18\x01 \x01(\v2\x12.movieapi.MetadataR\bmetadata\x12\x16\n" +
+	"\x06rating\x18\x02 \x01(\x01R\x06ratingB2Z0github.com/faizan2786/movie-backend/gen/movieapib\x06proto3"
 
 var (
 	file_movieapi_movie_proto_rawDescOnce sync.Once
@@ -191,8 +188,6 @@ func file_movieapi_movie_proto_init() {
 	if File_movieapi_movie_proto != nil {
 		return
 	}
-	file_movieapi_movie_proto_msgTypes[0].OneofWrappers = []any{}
-	file_movieapi_movie_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

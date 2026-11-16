@@ -77,9 +77,9 @@ func toProto(movie *Movie) *movieapi.Movie {
 		Metadata: &movieapi.Metadata{
 			Id:          movie.ID,
 			Title:       movie.Title,
-			ReleaseYear: new(movie.ReleaseYear), // pointer proto fields must store a copy
-			Description: new(movie.Description),
+			ReleaseYear: movie.ReleaseYear,
+			Description: movie.Description,
 		},
-		Rating: new(movie.RatingValue),
+		Rating: movie.RatingValue,
 	}
 }
