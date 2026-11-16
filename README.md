@@ -46,12 +46,12 @@ The Consul UI is then available at <http://localhost:8500>, where you can see th
 
 ## Protobuf definitions
 
-The message types for user facing `movieapi` are defined in [proto/movieapi/movie.proto](proto/movieapi/movie.proto). The generated Go code lives in `gen/movieapi/` and is imported as `github.com/faizan2786/movie-backend/gen/movieapi`.
+The message types for user facing `movieapi` are defined in [proto/movieapi/movieapi.proto](proto/movieapi/movieapi.proto). The generated Go code lives in `gen/movieapipb/` and is imported as `github.com/faizan2786/movie-backend/gen/movieapipb`.
 
 After changing a `.proto` file, regenerate the Go code from the repository root (requires `protoc` and `protoc-gen-go`) using below command:
 
 ```sh
-protoc -I=proto --go_out=. --go_opt=module=github.com/faizan2786/movie-backend movieapi/movie.proto
+protoc -I=proto --go_out=. --go_opt=module=github.com/faizan2786/movie-backend movieapi/movieapi.proto
 ```
 
 **Note**: Always use `-I=proto`, so that path to import other `.proto` files stay relative to the root `proto/` directory.

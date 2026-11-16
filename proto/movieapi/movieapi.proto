@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package movieapi;
-option go_package = "github.com/faizan2786/movie-backend/gen/movieapi";
+option go_package = "github.com/faizan2786/movie-backend/gen/movieapipb"; // <go-package-import-path>
 
 // Metadata is movie metadata.
 message Metadata {

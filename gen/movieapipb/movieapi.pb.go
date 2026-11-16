@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        v7.36.2
-// source: movieapi/movie.proto
+// source: movieapi/movieapi.proto
 
-package movieapi
+package movieapipb
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -34,7 +34,7 @@ type Metadata struct {
 
 func (x *Metadata) Reset() {
 	*x = Metadata{}
-	mi := &file_movieapi_movie_proto_msgTypes[0]
+	mi := &file_movieapi_movieapi_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *Metadata) String() string {
 func (*Metadata) ProtoMessage() {}
 
 func (x *Metadata) ProtoReflect() protoreflect.Message {
-	mi := &file_movieapi_movie_proto_msgTypes[0]
+	mi := &file_movieapi_movieapi_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *Metadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Metadata.ProtoReflect.Descriptor instead.
 func (*Metadata) Descriptor() ([]byte, []int) {
-	return file_movieapi_movie_proto_rawDescGZIP(), []int{0}
+	return file_movieapi_movieapi_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Metadata) GetId() string {
@@ -101,7 +101,7 @@ type Movie struct {
 
 func (x *Movie) Reset() {
 	*x = Movie{}
-	mi := &file_movieapi_movie_proto_msgTypes[1]
+	mi := &file_movieapi_movieapi_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -113,7 +113,7 @@ func (x *Movie) String() string {
 func (*Movie) ProtoMessage() {}
 
 func (x *Movie) ProtoReflect() protoreflect.Message {
-	mi := &file_movieapi_movie_proto_msgTypes[1]
+	mi := &file_movieapi_movieapi_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -126,7 +126,7 @@ func (x *Movie) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Movie.ProtoReflect.Descriptor instead.
 func (*Movie) Descriptor() ([]byte, []int) {
-	return file_movieapi_movie_proto_rawDescGZIP(), []int{1}
+	return file_movieapi_movieapi_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Movie) GetMetadata() *Metadata {
@@ -143,11 +143,11 @@ func (x *Movie) GetRating() float64 {
 	return 0
 }
 
-var File_movieapi_movie_proto protoreflect.FileDescriptor
+var File_movieapi_movieapi_proto protoreflect.FileDescriptor
 
-const file_movieapi_movie_proto_rawDesc = "" +
+const file_movieapi_movieapi_proto_rawDesc = "" +
 	"\n" +
-	"\x14movieapi/movie.proto\x12\bmovieapi\"u\n" +
+	"\x17movieapi/movieapi.proto\x12\bmovieapi\"u\n" +
 	"\bMetadata\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12!\n" +
@@ -155,26 +155,26 @@ const file_movieapi_movie_proto_rawDesc = "" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\"O\n" +
 	"\x05Movie\x12.\n" +
 	"\bmetadata\x18\x01 \x01(\v2\x12.movieapi.MetadataR\bmetadata\x12\x16\n" +
-	"\x06rating\x18\x02 \x01(\x01R\x06ratingB2Z0github.com/faizan2786/movie-backend/gen/movieapib\x06proto3"
+	"\x06rating\x18\x02 \x01(\x01R\x06ratingB4Z2github.com/faizan2786/movie-backend/gen/movieapipbb\x06proto3"
 
 var (
-	file_movieapi_movie_proto_rawDescOnce sync.Once
-	file_movieapi_movie_proto_rawDescData []byte
+	file_movieapi_movieapi_proto_rawDescOnce sync.Once
+	file_movieapi_movieapi_proto_rawDescData []byte
 )
 
-func file_movieapi_movie_proto_rawDescGZIP() []byte {
-	file_movieapi_movie_proto_rawDescOnce.Do(func() {
-		file_movieapi_movie_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_movieapi_movie_proto_rawDesc), len(file_movieapi_movie_proto_rawDesc)))
+func file_movieapi_movieapi_proto_rawDescGZIP() []byte {
+	file_movieapi_movieapi_proto_rawDescOnce.Do(func() {
+		file_movieapi_movieapi_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_movieapi_movieapi_proto_rawDesc), len(file_movieapi_movieapi_proto_rawDesc)))
 	})
-	return file_movieapi_movie_proto_rawDescData
+	return file_movieapi_movieapi_proto_rawDescData
 }
 
-var file_movieapi_movie_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_movieapi_movie_proto_goTypes = []any{
+var file_movieapi_movieapi_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_movieapi_movieapi_proto_goTypes = []any{
 	(*Metadata)(nil), // 0: movieapi.Metadata
 	(*Movie)(nil),    // 1: movieapi.Movie
 }
-var file_movieapi_movie_proto_depIdxs = []int32{
+var file_movieapi_movieapi_proto_depIdxs = []int32{
 	0, // 0: movieapi.Movie.metadata:type_name -> movieapi.Metadata
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
@@ -183,26 +183,26 @@ var file_movieapi_movie_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_movieapi_movie_proto_init() }
-func file_movieapi_movie_proto_init() {
-	if File_movieapi_movie_proto != nil {
+func init() { file_movieapi_movieapi_proto_init() }
+func file_movieapi_movieapi_proto_init() {
+	if File_movieapi_movieapi_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_movieapi_movie_proto_rawDesc), len(file_movieapi_movie_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_movieapi_movieapi_proto_rawDesc), len(file_movieapi_movieapi_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_movieapi_movie_proto_goTypes,
-		DependencyIndexes: file_movieapi_movie_proto_depIdxs,
-		MessageInfos:      file_movieapi_movie_proto_msgTypes,
+		GoTypes:           file_movieapi_movieapi_proto_goTypes,
+		DependencyIndexes: file_movieapi_movieapi_proto_depIdxs,
+		MessageInfos:      file_movieapi_movieapi_proto_msgTypes,
 	}.Build()
-	File_movieapi_movie_proto = out.File
-	file_movieapi_movie_proto_goTypes = nil
-	file_movieapi_movie_proto_depIdxs = nil
+	File_movieapi_movieapi_proto = out.File
+	file_movieapi_movieapi_proto_goTypes = nil
+	file_movieapi_movieapi_proto_depIdxs = nil
 }

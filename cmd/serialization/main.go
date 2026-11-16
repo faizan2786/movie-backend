@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/faizan2786/movie-backend/gen/movieapi"
+	"github.com/faizan2786/movie-backend/gen/movieapipb"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -63,7 +63,7 @@ func serializeToXML(movie *Movie) []byte {
 	return out
 }
 
-func serializeToProtobuf(pb *movieapi.Movie) []byte {
+func serializeToProtobuf(pb *movieapipb.Movie) []byte {
 	out, err := proto.Marshal(pb)
 	if err != nil {
 		panic(err)
@@ -72,9 +72,9 @@ func serializeToProtobuf(pb *movieapi.Movie) []byte {
 }
 
 // convert Movie struct into a protobuf type
-func toProto(movie *Movie) *movieapi.Movie {
-	return &movieapi.Movie{
-		Metadata: &movieapi.Metadata{
+func toProto(movie *Movie) *movieapipb.Movie {
+	return &movieapipb.Movie{
+		Metadata: &movieapipb.Metadata{
 			Id:          movie.ID,
 			Title:       movie.Title,
 			ReleaseYear: movie.ReleaseYear,
