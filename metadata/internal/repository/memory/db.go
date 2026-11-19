@@ -33,18 +33,36 @@ func (db *DB) GetMetadata(_ context.Context, id string) (model.Metadata, error) 
 	return data, nil
 }
 
-// StoreMetadata stores metadata for a movie with given id.
-// It returns [repository.ErrAlreadyExists] error when given metadata already exists.
-func (db *DB) StoreMetadata(_ context.Context, data model.Metadata) error {
+// UpsertMetadata inserts metadata for a movie, replacing any existing record with the same ID,
+// and reports whether a new record was created.
+//
+// If a record already exists, check callback is called before replacing the record;
+// a non-nil check error aborts the update.
+//
+// It returns [repository.ErrNullId] if the ID is empty.
+func (db *DB) UpsertMetadata(_ context.Context, data model.Metadata, check func(existing model.Metadata) error) (created bool, err error) {
 	if len(data.ID) == 0 {
-		return repository.ErrNullId
+		return false, repository.ErrNullId
 	}
 
 	db.m.Lock()
 	defer db.m.Unlock()
-	if _, ok := db.data[data.ID]; ok {
-		return repository.ErrAlreadyExists
+	if existing, ok := db.data[data.ID]; ok {
+		// if record already exists, call the check with it.
+		if err := check(existing); err != nil {
+			// check doesn't succeed, abort.
+			return false, err
+		} else {
+			// if check succeeds, we can update the existing record
+			// in which case, created is false.
+			db.data[data.ID] = data
+			created = false
+		}
+	} else {
+		// if record doesn't exist, insert it.
+		db.data[data.ID] = data
+		created = true
 	}
-	db.data[data.ID] = data
-	return nil
+
+	return created, nil
 }

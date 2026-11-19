@@ -19,10 +19,18 @@ Metadata is sent and returned as JSON:
 
 ## Behavior
 
-- `PUT` uses the ID from the path, ignoring any `id` in the body
-- `PUT` returns 409 if metadata for the ID already exists; stored metadata can't be updated
-- `GET` returns 404 if the movie doesn't exist
-- Metadata is held in memory and is lost when the service stops
+Metadata is held in memory and is lost when the service stops.
+
+### GET
+
+- Returns 404 if the movie doesn't exist
+
+### PUT
+
+- Uses the ID from the path, ignoring any `id` in the body
+- Returns 201 when it creates a new metadata and 200 when it replaces existing metadata
+- Returns 400 if the `title` or `releaseYear` is missing
+- Returns 409 if the `title` or `releaseYear` differs from the existing metadata; only `description` can be changed
 
 ## Startup & graceful shutdown
 

@@ -64,7 +64,7 @@ func (h *Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("PuttMetadata: request received for id =", id)
+	log.Println("PutMetadata: request received for id =", id)
 
 	// decode metadata from the body (assuming body is in json format)
 	var data model.Metadata
@@ -77,14 +77,23 @@ func (h *Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// store the metadata
-	err = h.c.PutMetadata(r.Context(), data)
+	created, err := h.c.PutMetadata(r.Context(), data)
 	if err != nil {
-		log.Printf("PuttMetadata: id = %s; error = %s", id, err)
-		if errors.Is(err, controller.ErrAlreadyExists) {
+		log.Printf("PutMetadata: id = %s; error = %s", id, err)
+		switch {
+		case errors.Is(err, controller.ErrNullField):
+			w.WriteHeader(http.StatusBadRequest)
+		case errors.Is(err, controller.ErrImmutableField):
 			w.WriteHeader(http.StatusConflict)
-			return
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	// return 201 if a new record was created
+	// (in any other case, 200 will be set by default).
+	if created {
+		w.WriteHeader(http.StatusCreated)
 	}
 }
