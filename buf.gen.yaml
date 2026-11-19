@@ -1,0 +1,9 @@
+version: v2
+plugins:
+  # list of (local) plugins to use (with their options)
+  - local: protoc-gen-go
+    out: .
+    opt: module=github.com/faizan2786/movie-backend
+  - local: protoc-gen-go-grpc
+    out: .
+    opt: module=github.com/faizan2786/movie-backend

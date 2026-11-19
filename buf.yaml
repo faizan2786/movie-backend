@@ -1,0 +1,12 @@
+version: v2
+modules:
+  - path: proto  #.proto files' root folder name
+lint:
+  use:
+    - STANDARD
+  except:
+    # skip versioning the proto packages for now
+    - PACKAGE_VERSION_SUFFIX
+breaking:
+  use:
+    - FILE
