@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package metadata;
+
+option go_package = "github.com/faizan2786/movie-backend/gen/metadatapb"; // <go-package-import-path>
+
+// Metadata is a movie metadata.
+message Metadata {
+  string id = 1;
+  string title = 2;
+  int32 release_year = 3;
+  string description = 4;
+}

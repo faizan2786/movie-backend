@@ -1,18 +1,12 @@
 syntax = "proto3";
-
 package movieapi;
-option go_package = "github.com/faizan2786/movie-backend/gen/movieapipb"; // <go-package-import-path>
 
-// Metadata is movie metadata.
-message Metadata {
-  string id = 1;
-  string title = 2;
-  int32 release_year = 3;
-  string description = 4;
-}
+import "metadata/metadata.proto";
+
+option go_package = "github.com/faizan2786/movie-backend/gen/movieapipb"; // <go-package-import-path>
 
 // Movie is the info related to a movie.
 message Movie {
-  Metadata metadata = 1;
+  metadata.Metadata metadata = 1;
   double rating = 2;
 }
