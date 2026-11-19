@@ -76,7 +76,7 @@ func serializeToProtobuf(pb *movieapipb.Movie) []byte {
 func toProto(movie *Movie) *movieapipb.Movie {
 	return &movieapipb.Movie{
 		Metadata: &metadatapb.Metadata{
-			Id:          movie.ID,
+			MovieId:     movie.ID,
 			Title:       movie.Title,
 			ReleaseYear: movie.ReleaseYear,
 			Description: movie.Description,

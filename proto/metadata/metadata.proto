@@ -6,8 +6,31 @@ option go_package = "github.com/faizan2786/movie-backend/gen/metadatapb"; // <go
 
 // Metadata is a movie metadata.
 message Metadata {
-  string id = 1;
+  string movie_id = 1;
   string title = 2;
   int32 release_year = 3;
   string description = 4;
 }
+
+// a movie metadata grpc service
+service MetadataService {
+  // fetch metadata for a movie
+  rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse);
+
+  // insert/update metadata for a movie
+  rpc PutMetadata(PutMetadataRequest) returns (PutMetadataResponse);
+}
+
+message GetMetadataRequest {
+  string movie_id = 1;
+}
+
+message GetMetadataResponse {
+  Metadata metadata = 1;
+}
+
+message PutMetadataRequest {
+  Metadata metadata = 1;
+}
+
+message PutMetadataResponse {}
