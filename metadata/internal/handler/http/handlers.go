@@ -1,4 +1,4 @@
-package handler
+package http
 
 import (
 	"encoding/json/v2"
@@ -11,17 +11,17 @@ import (
 )
 
 // Handler implements http handlers for the metadata service.
-type Handler struct {
+type HttpHandler struct {
 	c *controller.Controller
 }
 
 // New returns a new of [Handler].
-func New(ctlr *controller.Controller) *Handler {
-	return &Handler{c: ctlr}
+func New(ctlr *controller.Controller) *HttpHandler {
+	return &HttpHandler{c: ctlr}
 }
 
 // GetMetadata is an http GET handler to retrieve movie metadata
-func (h *Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) GetMetadata(w http.ResponseWriter, r *http.Request) {
 	// read `id` from the (named) path parameter
 	id := r.PathValue("id")
 	if len(id) == 0 {
@@ -55,7 +55,7 @@ func (h *Handler) GetMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 // PutMetadata is an http PUT handler to store movie metadata
-func (h *Handler) PutMetadata(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) PutMetadata(w http.ResponseWriter, r *http.Request) {
 	// read `id` from the path parameter
 	id := r.PathValue("id")
 	if len(id) == 0 {

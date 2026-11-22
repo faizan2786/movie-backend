@@ -5,19 +5,23 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/faizan2786/movie-backend/metadata/internal/controller"
-	"github.com/faizan2786/movie-backend/metadata/internal/handler"
-	"github.com/faizan2786/movie-backend/metadata/internal/repository/memory"
-	"github.com/faizan2786/movie-backend/pkg/discovery"
+	pb "github.com/faizan2786/movie-backend/gen/metadatapb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
+	"github.com/faizan2786/movie-backend/metadata/internal/controller"
+	grpcserver "github.com/faizan2786/movie-backend/metadata/internal/handler/grpc"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
+
+	"github.com/faizan2786/movie-backend/metadata/internal/repository/memory"
+	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
 
 const (
@@ -58,29 +62,35 @@ func run() error {
 		return fmt.Errorf("register service: %w", err)
 	}
 
-	// 2) register API handlers
-	mux := registerHandlers()
+	// 2) register metadata grpc server
+	srv := registerGrpcServer()
 
-	// 3) serve until a shutdown signal is received, then deregister & shut down gracefully
-	srv := &http.Server{Addr: addr, Handler: mux}
+	// 3) create a listener for the server process
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		panic(err)
+	}
 
+	// 4) run the grpc server with graceful shutdown
 	deregisterFunc := func() {
 		ctx, cancel := context.WithTimeout(context.Background(), deregisterTimeout)
 		defer cancel()
 		deregister(ctx)
 	}
-	return server.Run(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
+	return server.ServeGrpc(ctx, srv, listener, gracefulShutdownTimeout, deregisterFunc)
 }
 
-func registerHandlers() http.Handler {
+// create a new grpc server and register metadata grpc server implementation
+func registerGrpcServer() *grpc.Server {
 
 	db := memory.NewDB()
 	controller := controller.New(db)
-	handler := handler.New(controller)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{id}", handler.GetMetadata)
-	mux.HandleFunc("PUT /{id}", handler.PutMetadata)
+	srv := grpc.NewServer()
+	pb.RegisterMetadataServiceServer(srv, grpcserver.NewServer(controller))
 
-	return mux
+	// Register reflection service on the server.
+	reflection.Register(srv)
+
+	return srv
 }

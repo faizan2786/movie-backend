@@ -79,7 +79,7 @@ func ServeGrpc(ctx context.Context, srv *grpc.Server, l net.Listener, drainTimeo
 		if beforeShutdown != nil {
 			beforeShutdown()
 		}
-		return fmt.Errorf("serve on %s: %w", l.Addr, err)
+		return fmt.Errorf("serve on %s: %w", l.Addr(), err)
 	case <-ctx.Done():
 	}
 
@@ -89,7 +89,7 @@ func ServeGrpc(ctx context.Context, srv *grpc.Server, l net.Listener, drainTimeo
 	}
 
 	// 4) gracefully shutdown the server (or return after requested timeout)
-	log.Printf("shutting down server at %s", l.Addr)
+	log.Printf("shutting down server at %s", l.Addr())
 	done := make(chan struct{}, 1)
 	go func() {
 		srv.GracefulStop()
