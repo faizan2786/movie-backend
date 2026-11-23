@@ -84,9 +84,10 @@ func newGrpcServer() *grpc.Server {
 
 	db := memory.NewDB()
 	controller := controller.New(db)
+	metadataServer := grpcserver.NewServer(controller)
 
 	srv := grpc.NewServer()
-	pb.RegisterMetadataServiceServer(srv, grpcserver.NewServer(controller))
+	pb.RegisterMetadataServiceServer(srv, metadataServer)
 
 	// Register reflection service on the server.
 	reflection.Register(srv)
