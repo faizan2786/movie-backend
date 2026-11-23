@@ -3,7 +3,7 @@ module github.com/faizan2786/movie-backend/metadata
 go 1.27.1
 
 require (
-	github.com/faizan2786/movie-backend v0.3.0
+	github.com/faizan2786/movie-backend v0.3.1
 	google.golang.org/grpc v1.85.0
 )
 

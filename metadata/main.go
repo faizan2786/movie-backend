@@ -17,11 +17,11 @@ import (
 
 	"github.com/faizan2786/movie-backend/metadata/internal/controller"
 	grpcserver "github.com/faizan2786/movie-backend/metadata/internal/handler/grpc"
-	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
 
 	"github.com/faizan2786/movie-backend/metadata/internal/repository/memory"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
+	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 )
 
 const (
@@ -45,30 +45,29 @@ func run() error {
 	flag.IntVar(&port, "port", defaultPort, "port to run the service at")
 	flag.Parse()
 
-	addr := fmt.Sprintf("%s:%d", "localhost", port)
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	context.AfterFunc(ctx, stop) // stop receiving signal notifications as soon as possible (so a second Ctrl+C forces quit)
 
-	// 1) register the service with registry.
+	// 1) create and register metadata grpc server
+	srv := newGrpcServer()
+
+	// 2) create a listener for the server process
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return fmt.Errorf("listen on :%d: %w", port, err)
+	}
+
+	// 3) register the service with service registry.
 	reg, err := registry.New(discovery.DefaultConsulAddr)
 	if err != nil {
 		return fmt.Errorf("create consul registry: %w", err)
 	}
 
+	addr := fmt.Sprintf("%s:%d", "localhost", port)
 	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, srvName, addr, heartbeatInterval)
 	if err != nil {
 		return fmt.Errorf("register service: %w", err)
-	}
-
-	// 2) register metadata grpc server
-	srv := registerGrpcServer()
-
-	// 3) create a listener for the server process
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		panic(err)
 	}
 
 	// 4) run the grpc server with graceful shutdown
@@ -80,8 +79,8 @@ func run() error {
 	return server.ServeGrpc(ctx, srv, listener, gracefulShutdownTimeout, deregisterFunc)
 }
 
-// create a new grpc server and register metadata grpc server implementation
-func registerGrpcServer() *grpc.Server {
+// newGrpcServer initialise repo, controller, creates a new metadata grpc server and registers it.
+func newGrpcServer() *grpc.Server {
 
 	db := memory.NewDB()
 	controller := controller.New(db)
