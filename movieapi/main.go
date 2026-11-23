@@ -69,7 +69,7 @@ func run() error {
 		defer cancel()
 		deregister(ctx)
 	}
-	return server.Run(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
+	return server.ServeHttp(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
 }
 
 func registerHandlers(reg discovery.ServiceRegistry) http.Handler {

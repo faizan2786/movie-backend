@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRun_ShutsDownOnCancel(t *testing.T) {
+func TestRun_HttpShutsDownOnCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	srv := &http.Server{Addr: "localhost:0", Handler: http.NewServeMux()}
 
 	called := false
 	done := make(chan error, 1)
 	go func() {
-		done <- Run(ctx, srv, time.Second, func() { called = true })
+		done <- ServeHttp(ctx, srv, time.Second, func() { called = true })
 	}()
 
 	cancel()
@@ -31,7 +31,7 @@ func TestRun_ShutsDownOnCancel(t *testing.T) {
 	}
 }
 
-func TestRun_ReturnsErrorWhenPortInUse(t *testing.T) {
+func TestRun_HttpReturnsErrorWhenPortInUse(t *testing.T) {
 	ln, err := net.Listen("tcp", "localhost:0")
 	require.NoError(t, err)
 	defer ln.Close()
@@ -39,7 +39,7 @@ func TestRun_ReturnsErrorWhenPortInUse(t *testing.T) {
 	srv := &http.Server{Addr: ln.Addr().String(), Handler: http.NewServeMux()}
 
 	called := false
-	err = Run(context.Background(), srv, time.Second, func() { called = true })
+	err = ServeHttp(context.Background(), srv, time.Second, func() { called = true })
 	require.Error(t, err)
 	require.True(t, called, "beforeShutdown should be called when the server fails to start")
 }
