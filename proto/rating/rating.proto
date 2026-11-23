@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package rating;
+
+option go_package = "github.com/faizan2786/movie-backend/gen/ratingpb";
+
+// A RecordType is an enum of record types that can be rated
+enum RecordType {
+  RECORD_TYPE_UNSPECIFIED = 0;
+  RECORD_TYPE_MOVIE = 1;
+}
+
+// Interface for the rating service.
+service RatingService {
+  // get aggregated rating for a record.
+  //
+  // If the record hasn't been rated yet, it returns OK with rating unset.
+  rpc GetAggregatedRating(GetAggregatedRatingRequest) returns (GetAggregatedRatingResponse);
+
+  // insert/update rating for a record.
+  rpc PutRating(PutRatingRequest) returns (PutRatingResponse);
+}
+
+message GetAggregatedRatingRequest {
+  RecordType record_type = 1;
+  string record_id = 2;
+}
+
+// GetAggregatedRatingResponse contains the average rating for a record.
+message GetAggregatedRatingResponse {
+  // rating is the average of all user ratings.
+  // It is unset if the record hasn't been rated yet.
+  optional double rating = 1;
+}
+
+message PutRatingRequest {
+  RecordType record_type = 1;
+  string record_id = 2;
+  string user_id = 3;
+
+  // rating_value is the user's rating, from 1 to 10 inclusive.
+  uint32 rating_value = 4;
+}
+
+message PutRatingResponse {}
