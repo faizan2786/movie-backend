@@ -2,7 +2,10 @@ module github.com/faizan2786/movie-backend/rating
 
 go 1.27.1
 
-require github.com/faizan2786/movie-backend v0.2.0
+require (
+	github.com/faizan2786/movie-backend v0.4.0
+	google.golang.org/grpc v1.85.0
+)
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
@@ -22,5 +25,9 @@ require (
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
+	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260817212433-ac3dfec99bb1 // indirect
+	google.golang.org/protobuf v1.36.12 // indirect
 )

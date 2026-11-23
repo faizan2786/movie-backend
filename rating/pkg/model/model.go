@@ -6,6 +6,9 @@ package model
 // Example: movies, actors, etc.
 type RecordType string
 
+// RecordTypeMovie is the record type for movies.
+const RecordTypeMovie RecordType = "movies"
+
 // RecordID is the ID of a record being rated.
 // Together with [RecordType], it uniquely identifies the record being rated.
 type RecordID string
@@ -14,7 +17,7 @@ type RecordID string
 type UserID string
 
 // RatingValue represents a value for a rating record.
-type RatingValue int
+type RatingValue int32
 
 const (
 	// MinRatingValue is the minimum allowed [RatingValue].

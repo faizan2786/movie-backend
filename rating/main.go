@@ -5,17 +5,22 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
+	pb "github.com/faizan2786/movie-backend/gen/ratingpb"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
+
 	"github.com/faizan2786/movie-backend/rating/internal/controller"
-	"github.com/faizan2786/movie-backend/rating/internal/handler"
+	grpcserver "github.com/faizan2786/movie-backend/rating/internal/handler/grpc"
 	"github.com/faizan2786/movie-backend/rating/internal/repository/memory"
 )
 
@@ -40,47 +45,52 @@ func run() error {
 	flag.IntVar(&port, "port", defaultPort, "port to run the service at")
 	flag.Parse()
 
-	addr := fmt.Sprintf("%s:%d", "localhost", port)
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	context.AfterFunc(ctx, stop) // stop receiving signal notifications as soon as possible (so a second Ctrl+C forces quit)
 
-	// 1) register the service with registry.
+	// 1) create and register a rating grpc server
+	srv := newGrpcServer()
+
+	// 2) create a tcp listener at given port
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return fmt.Errorf("listen on :%d: %w", port, err)
+	}
+
+	// 3) register the service with service registry.
 	reg, err := registry.New(discovery.DefaultConsulAddr)
 	if err != nil {
 		return fmt.Errorf("create consul registry: %w", err)
 	}
 
+	addr := fmt.Sprintf("%s:%d", "localhost", port)
 	deregister, err := discovery.RegisterWithHeartbeat(ctx, reg, srvName, addr, heartbeatInterval)
 	if err != nil {
 		return fmt.Errorf("register service: %w", err)
 	}
 
-	// 2) register API handlers
-	mux := registerHandlers()
-
-	// 3) serve until a shutdown signal is received, then deregister & shut down gracefully
-	srv := &http.Server{Addr: addr, Handler: mux}
-
+	// 4) run the grpc server with graceful shutdown
 	deregisterFunc := func() {
 		ctx, cancel := context.WithTimeout(context.Background(), deregisterTimeout)
 		defer cancel()
 		deregister(ctx)
 	}
-	return server.ServeHttp(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
+	return server.ServeGrpc(ctx, srv, listener, gracefulShutdownTimeout, deregisterFunc)
 }
 
-func registerHandlers() http.Handler {
+// newGrpcServer initialise repo, controller, creates a new rating grpc server and registers it.
+func newGrpcServer() *grpc.Server {
 
 	db := memory.NewDB()
 	controller := controller.New(db)
-	handler := handler.New(controller)
+	grpcServer := grpcserver.NewServer(controller)
 
-	// create a new mux and register handlers
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{type}/{id}", handler.GetRating)
-	mux.HandleFunc("PUT /{type}/{id}", handler.PutRating)
+	srv := grpc.NewServer()
+	pb.RegisterRatingServiceServer(srv, grpcServer)
 
-	return mux
+	// Register reflection service on the server.
+	reflection.Register(srv)
+
+	return srv
 }

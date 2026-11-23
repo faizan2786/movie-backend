@@ -11,17 +11,17 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/faizan2786/movie-backend/gen/metadatapb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/faizan2786/movie-backend/metadata/internal/controller"
-	grpcserver "github.com/faizan2786/movie-backend/metadata/internal/handler/grpc"
-	"github.com/faizan2786/movie-backend/pkg/server"
-
-	"github.com/faizan2786/movie-backend/metadata/internal/repository/memory"
+	pb "github.com/faizan2786/movie-backend/gen/metadatapb"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
+	"github.com/faizan2786/movie-backend/pkg/server"
+
+	"github.com/faizan2786/movie-backend/metadata/internal/controller"
+	grpcserver "github.com/faizan2786/movie-backend/metadata/internal/handler/grpc"
+	"github.com/faizan2786/movie-backend/metadata/internal/repository/memory"
 )
 
 const (
@@ -84,10 +84,10 @@ func newGrpcServer() *grpc.Server {
 
 	db := memory.NewDB()
 	controller := controller.New(db)
-	metadataServer := grpcserver.NewServer(controller)
+	grpcServer := grpcserver.NewServer(controller)
 
 	srv := grpc.NewServer()
-	pb.RegisterMetadataServiceServer(srv, metadataServer)
+	pb.RegisterMetadataServiceServer(srv, grpcServer)
 
 	// Register reflection service on the server.
 	reflection.Register(srv)
