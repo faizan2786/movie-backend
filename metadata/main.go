@@ -52,7 +52,7 @@ func run() error {
 	// 1) create and register metadata grpc server
 	srv := newGrpcServer()
 
-	// 2) create a listener for the server process
+	// 2) create a tcp listener at given port
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return fmt.Errorf("listen on :%d: %w", port, err)

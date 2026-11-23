@@ -47,22 +47,16 @@ func (db *DB) UpsertMetadata(_ context.Context, data model.Metadata, check func(
 
 	db.m.Lock()
 	defer db.m.Unlock()
-	if existing, ok := db.data[data.ID]; ok {
-		// if record already exists, call the check with it.
+
+	existing, ok := db.data[data.ID]
+	// if data exists, call check (if it is not nil)
+	if ok && check != nil {
 		if err := check(existing); err != nil {
-			// check doesn't succeed, abort.
 			return false, err
-		} else {
-			// if check succeeds, we can update the existing record
-			// in which case, created is false.
-			db.data[data.ID] = data
-			created = false
 		}
-	} else {
-		// if record doesn't exist, insert it.
-		db.data[data.ID] = data
-		created = true
 	}
 
-	return created, nil
+	// create/update the existing record
+	db.data[data.ID] = data
+	return !ok, nil // created is false when data was already existing
 }

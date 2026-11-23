@@ -53,9 +53,9 @@ func (s *MetadataServer) PutMetadata(ctx context.Context, req *pb.PutMetadataReq
 	if err != nil {
 		switch {
 		case errors.Is(err, controller.ErrNullId):
-			return nil, status.Error(codes.InvalidArgument, "movie id cannot be empty")
+			return nil, status.Error(codes.InvalidArgument, "movie_id cannot be empty")
 		case errors.Is(err, controller.ErrNullField):
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, status.Error(codes.InvalidArgument, "title and release_year cannot be null")
 		case errors.Is(err, controller.ErrImmutableField):
 			return nil, status.Error(codes.InvalidArgument, "title and release_year cannot be changed")
 		default:
