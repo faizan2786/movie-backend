@@ -28,22 +28,6 @@ client ──▶ movieapi ──┬──▶ metadata
                       └──▶ rating
 ```
 
-## Service discovery
-
-Services find each other through a [Consul](https://developer.hashicorp.com/consul) registry at `localhost:8500`, using the shared `pkg/discovery` package:
-
-- On startup, each service registers an instance with its address and sends a heartbeat every second; Consul marks an instance unhealthy if it misses heartbeats for 5 seconds.
-- On shutdown, each service deregisters its instance before draining in-flight requests.
-- `movieapi` looks up the healthy `metadata` and `rating` instances for each request and picks one at random.
-
-Start a local Consul dev server with Docker before running the services:
-
-```sh
-docker run -d -p 8500:8500 -p 8600:8600/udp --name=dev-consul hashicorp/consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client='0.0.0.0'
-```
-
-The Consul UI is then available at <http://localhost:8500>, where you can see the registered services and their health.
-
 ## Protobuf definitions
 
 The `.proto` files live in `proto/` directory, and the generated Go code lives in `gen/` folder (e.g. `proto/metadata/` generates `gen/metadatapb/`).
@@ -57,6 +41,23 @@ buf lint        # run the buf linter on .proto files
 buf generate    # generate the code
 
 ```
+
+## Service discovery & Graceful Shutdown
+
+Services find each other through a [Consul](https://developer.hashicorp.com/consul) registry at `localhost:8500`, using the shared `pkg/discovery` package:
+
+- On startup, each service registers an instance with its address and sends a heartbeat every second; Consul marks an instance unhealthy if it misses heartbeats for 5 seconds.
+- On shutdown, e.g. on `SIGINT` (Ctrl+C) or `SIGTERM`, each service deregisters its instance before draining in-flight requests. 
+- In-flight requests get up to 5 seconds to finish before the remaining connections are closed, and a second Ctrl+C during shutdown forces the service to quit.
+- `movieapi` looks up the healthy `metadata` and `rating` instances for each request and picks one at random.
+
+Start a local Consul dev server with Docker before running the services:
+
+```sh
+docker run -d -p 8500:8500 -p 8600:8600/udp --name=dev-consul hashicorp/consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client='0.0.0.0'
+```
+
+The Consul UI is then available at <http://localhost:8500>, where you can see the registered services and their health.
 
 ## Development
 

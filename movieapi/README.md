@@ -32,13 +32,6 @@ Its design uses a **layered architecture**, separating the HTTP handling (i.e. A
 - Finds `metadata` and `rating` instances through Consul on each request, picking a healthy instance at random, and calls it with a 5 second timeout and no redirects
 - Returns 500 if no healthy instance of a downstream service is registered
 
-## Startup & graceful shutdown
-
-- On startup, the service registers itself with Consul (at `localhost:8500`) as `movieapi` with a unique instance ID, then sends a heartbeat every second to keep the instance healthy
-- On `SIGINT` (Ctrl+C) or `SIGTERM`, it first deregisters the instance, so callers stop discovering it, and then shuts down gracefully, giving in-flight requests up to 5 seconds to finish before closing the remaining connections
-- A second Ctrl+C during shutdown forces the service to quit
-- If the server fails to start (e.g. the port is already in use), the instance is deregistered before the service exits
-
 ## Running
 
 Start the Consul server (see the [root README](../README.md#service-discovery)) and the `metadata` and `rating` services first, then:

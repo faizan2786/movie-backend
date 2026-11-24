@@ -1,43 +1,33 @@
 # Metadata Service
 
-This Go module provides **an HTTP service** for storing and retrieving movie metadata, using an in-memory repository for storage.
+This Go module provides **a gRPC service** for storing and retrieving movie metadata, using an in-memory repository for storage.
 
-Its design uses a **layered architecture**, separating the HTTP handling (i.e. API layer), business logic (i.e. controller layer), and data storage (i.e. repository layer) concerns.
+Its design uses a **layered architecture**, separating the gRPC request handling (i.e. API/Service layer), business logic (i.e. controller layer), and data storage (i.e. repository layer) concerns.
 
-## Endpoints
+## RPCs
 
-| Method | Path    | Description                 |
-| ------ | ------- | --------------------------- |
-| `GET`  | `/{id}` | Get a movie's metadata      |
-| `PUT`  | `/{id}` | Store a movie's metadata    |
+The `metadata.MetadataService` service is defined in [proto/metadata/metadata.proto](../proto/metadata/metadata.proto):
 
-Metadata is sent and returned as JSON:
+| RPC           | Request fields | Description              |
+| ------------- | -------------- | ------------------------ |
+| `GetMetadata` | `movie_id`     | Get a movie's metadata   |
+| `PutMetadata` | `metadata`     | Store a movie's metadata |
 
-```json
-{"id": "the-matrix", "title": "The Matrix", "releaseYear": 1999, "description": "..."}
-```
+Both RPCs use the `Metadata` message, which has `movie_id`, `title`, `release_year`, and `description` fields. `GetMetadata` returns it in the `metadata` field, and `PutMetadata` returns an empty response.
 
-## Behavior
+## Service Behaviour
 
-Metadata is held in memory and is lost when the service stops.
+### GetMetadata
 
-### GET
+- Returns `InvalidArgument` if `movie_id` is empty
+- Returns `NotFound` if the movie doesn't exist
 
-- Returns 404 if the movie doesn't exist
+### PutMetadata
 
-### PUT
-
-- Uses the ID from the path, ignoring any `id` in the body
-- Returns 201 when it creates a new metadata and 200 when it replaces existing metadata
-- Returns 400 if the `title` or `releaseYear` is missing
-- Returns 409 if the `title` or `releaseYear` differs from the existing metadata; only `description` can be changed
-
-## Startup & graceful shutdown
-
-- On startup, the service registers itself with Consul (at `localhost:8500`) as `metadata` with a unique instance ID, then sends a heartbeat every second to keep the instance healthy
-- On `SIGINT` (Ctrl+C) or `SIGTERM`, it first deregisters the instance, so callers stop discovering it, and then shuts down gracefully, giving in-flight requests up to 5 seconds to finish before closing the remaining connections
-- A second Ctrl+C during shutdown forces the service to quit
-- If the server fails to start (e.g. the port is already in use), the instance is deregistered before the service exits
+- Metadata are held in memory and are lost when the service stops
+- Creates the metadata if the movie doesn't exist, otherwise replaces it
+- Returns `InvalidArgument` if `movie_id`, `title` or `release_year` is missing
+- Returns `InvalidArgument` if `title` or `release_year` differs from the existing metadata; only `description` can be changed
 
 ## Running
 
@@ -49,6 +39,44 @@ go run ./metadata -port 9081     # listens on localhost:9081
 ```
 
 Use the `-port` flag to run more than one instance; each registers separately with Consul. Each instance has its own in-memory store, so instances don't share data.
+
+### Example gRPC requests
+
+The server registers gRPC reflection, so you can call it with [grpcurl](https://github.com/fullstorydev/grpcurl) without passing any `.proto` files.
+
+Store a movie's metadata (returns an empty response on success):
+
+```sh
+grpcurl -plaintext -d @ localhost:8081 metadata.MetadataService.PutMetadata << EOM
+{
+  "metadata": {
+    "movie_id": "the-matrix",
+    "title": "The Matrix",
+    "release_year": 1999,
+    "description": "A hacker learns the truth about his reality."
+  }
+}
+EOM
+```
+Output:
+```text
+{}
+```
+
+Get a movie's metadata:
+
+```sh
+grpcurl -plaintext -format text -d 'movie_id:"the-matrix"' localhost:8081 metadata.MetadataService.GetMetadata
+```
+Output:
+```text
+metadata: <
+  movie_id: "the-matrix"
+  title: "The Matrix"
+  release_year: 1999
+  description: "A hacker learns the truth about his reality."
+>
+```
 
 ## Project structure
 
