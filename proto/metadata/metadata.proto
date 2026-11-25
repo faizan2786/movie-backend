@@ -14,10 +14,15 @@ message Metadata {
 
 // a movie metadata grpc service
 service MetadataService {
-  // fetch metadata for a movie
+  // Fetch metadata for a movie.
+  //
+  // It returns InvalidArgument in case of invalid inputs 
+  // and returns NotFound if the movie with given ID doesn't exist.
   rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse);
 
-  // insert/update metadata for a movie
+  // Insert/update metadata for a movie.
+  //
+  // It returns InvalidArgument in case of invalid inputs 
   rpc PutMetadata(PutMetadataRequest) returns (PutMetadataResponse);
 }
 

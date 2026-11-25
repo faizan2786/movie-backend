@@ -1,4 +1,4 @@
-package metadata
+package http
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/httputil"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
@@ -44,7 +45,7 @@ func NewGateway(r discovery.ServiceRegistry) *Gateway {
 func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error) {
 	var data model.Metadata
 
-	serviceURL, err := gateway.GetServiceURL(ctx, discovery.MetadataServiceName, g.registry, defaultScheme)
+	serviceURL, err := httputil.GetServiceURL(ctx, discovery.MetadataServiceName, g.registry, defaultScheme)
 	if err != nil {
 		return data, err
 	}

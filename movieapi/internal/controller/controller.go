@@ -14,6 +14,9 @@ import (
 
 // MetadataGateway is an interface for movie metadata.
 type MetadataGateway interface {
+	// GetMetadata returns [model.Metadata] for a movie with given id.
+	//
+	// It returns [gateway.ErrNotFound] if the movie doesn't exist.
 	GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error)
 }
 

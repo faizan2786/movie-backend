@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/httputil"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 )
@@ -41,11 +42,10 @@ func NewGateway(r discovery.ServiceRegistry) *Gateway {
 }
 
 // GetMovieRating returns aggregated [model.Rating] for a movie with given id.
-// It returns [gateway.ErrNotFound] if the rating doesn't exists.
-func (g *Gateway) GetMovieRating(ctx context.Context, movieID model.ID) (model.RatingValue, error) {
-	var rating model.RatingValue
-
-	serviceURL, err := gateway.GetServiceURL(ctx, discovery.RatingServiceName, g.registry, defaultScheme)
+// It returns [gateway.ErrNotFound] if the rating doesn't exist.
+func (g *Gateway) GetMovieRating(ctx context.Context, movieID model.ID) (float64, error) {
+	var rating float64
+	serviceURL, err := httputil.GetServiceURL(ctx, discovery.RatingServiceName, g.registry, defaultScheme)
 	if err != nil {
 		return rating, err
 	}
@@ -90,7 +90,7 @@ func (g *Gateway) SubmitMovieRating(ctx context.Context, movieID model.ID, ratin
 	}
 	body := bytes.NewReader(data)
 
-	serviceURL, err := gateway.GetServiceURL(ctx, discovery.RatingServiceName, g.registry, defaultScheme)
+	serviceURL, err := httputil.GetServiceURL(ctx, discovery.RatingServiceName, g.registry, defaultScheme)
 	if err != nil {
 		return err
 	}

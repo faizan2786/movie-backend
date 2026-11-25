@@ -1,4 +1,4 @@
-package metadata_test
+package http_test
 
 import (
 	"encoding/json/v2"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
-	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata"
+	httpgw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata/http"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	"github.com/faizan2786/movie-backend/pkg/discovery/memory"
@@ -58,7 +58,7 @@ func registryWithTestServer(t *testing.T, statusCode int, sendInvalidResp bool) 
 
 func TestGetMetadataValid(t *testing.T) {
 	reg := registryWithTestServer(t, http.StatusOK, false)
-	gw := metadata.NewGateway(reg)
+	gw := httpgw.NewGateway(reg)
 
 	data, err := gw.GetMetadata(t.Context(), testID)
 	require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestGetMetadataWithErrors(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			reg := registryWithTestServer(t, tc.code, tc.invalidResp)
-			gw := metadata.NewGateway(reg)
+			gw := httpgw.NewGateway(reg)
 
 			_, err := gw.GetMetadata(t.Context(), testID)
 			require.Error(t, err)

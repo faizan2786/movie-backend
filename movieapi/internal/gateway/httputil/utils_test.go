@@ -1,10 +1,11 @@
-package gateway_test
+package httputil_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/httputil"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	"github.com/faizan2786/movie-backend/pkg/discovery/memory"
 	"github.com/stretchr/testify/require"
@@ -27,7 +28,7 @@ func TestGetServiceURL(t *testing.T) {
 	err := reg.Register(t.Context(), testService, discovery.GenerateInstanceID(), "localhost:8081")
 	require.NoError(t, err)
 
-	u, err := gateway.GetServiceURL(t.Context(), testService, reg, "http")
+	u, err := httputil.GetServiceURL(t.Context(), testService, reg, "http")
 	require.NoError(t, err)
 	require.Equal(t, "http://localhost:8081", u.String())
 }
@@ -81,7 +82,7 @@ func TestGetServiceURL_WithErrors(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := gateway.GetServiceURL(t.Context(), testService, tc.registry(t), tc.scheme)
+			_, err := httputil.GetServiceURL(t.Context(), testService, tc.registry(t), tc.scheme)
 			require.ErrorIs(t, err, tc.wantErr)
 		})
 	}

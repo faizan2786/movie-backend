@@ -18,12 +18,12 @@ import (
 const (
 	testMovieID = "123"
 
-	testDataGET = model.RatingValue(7.5)
+	testDataGET float64 = 7.5
 )
 
 var testDataPUT = model.Rating{
 	UserID: model.ID("1"),
-	Value:  model.RatingValue(6),
+	Value:  6,
 }
 
 // test server for GET requests

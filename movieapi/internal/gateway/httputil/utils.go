@@ -1,4 +1,4 @@
-package gateway
+package httputil
 
 import (
 	"context"
@@ -7,18 +7,8 @@ import (
 	"math/rand/v2"
 	"net/url"
 
+	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
-)
-
-var (
-	// ErrNotFound is returned when a resource is "not found".
-	ErrNotFound = errors.New("not found")
-
-	// ErrInvalidInput is returned when a service rejects a request as "not valid".
-	ErrInvalidInput = errors.New("input not valid")
-
-	// ErrInvalidURL is returned when a service URL is "not valid".
-	ErrInvalidURL = errors.New("URL not valid")
 )
 
 // GetServiceURL returns a valid url of a specified service from the registry at random.
@@ -46,11 +36,11 @@ func GetServiceURL(ctx context.Context, service string, registry discovery.Servi
 func parseURL(addr string) (*url.URL, error) {
 	serviceURL, err := url.Parse(addr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", ErrInvalidURL, err)
+		return nil, fmt.Errorf("%w: %s", gateway.ErrInvalidURL, err)
 	}
 
 	if err := validateURL(serviceURL); err != nil {
-		return nil, fmt.Errorf("%w: %s", ErrInvalidURL, err)
+		return nil, fmt.Errorf("%w: %s", gateway.ErrInvalidURL, err)
 	}
 
 	return serviceURL, nil

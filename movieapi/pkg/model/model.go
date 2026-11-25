@@ -18,21 +18,18 @@ func (id ID) Valid() bool {
 type Metadata struct {
 	ID          ID     `json:"id"`
 	Title       string `json:"title"`
-	ReleaseYear int    `json:"releaseYear,omitempty"`
+	ReleaseYear int32  `json:"releaseYear,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
-// RatingValue is aggregated rating for a movie.
-type RatingValue float64
-
 // Rating is a movie rating submitted by a user.
 type Rating struct {
-	UserID ID          `json:"userID"`
-	Value  RatingValue `json:"value"`
+	UserID ID      `json:"userID"`
+	Value  float64 `json:"value"`
 }
 
 // Movie is the metadata and rating for a movie.
 type Movie struct {
 	Metadata
-	Rating RatingValue `json:"rating,omitempty"`
+	Rating float64 `json:"rating,omitempty"`
 }
