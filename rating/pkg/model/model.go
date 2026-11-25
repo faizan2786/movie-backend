@@ -17,7 +17,7 @@ type RecordID string
 type UserID string
 
 // RatingValue represents a value for a rating record.
-type RatingValue int32
+type RatingValue uint32
 
 const (
 	// MinRatingValue is the minimum allowed [RatingValue].

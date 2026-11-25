@@ -18,6 +18,8 @@ service RatingService {
   rpc GetAggregatedRating(GetAggregatedRatingRequest) returns (GetAggregatedRatingResponse);
 
   // insert/update rating for a record.
+  //
+  // It returns InvalidArgument in case of invalid inputs.
   rpc PutRating(PutRatingRequest) returns (PutRatingResponse);
 }
 

@@ -22,7 +22,14 @@ type MetadataGateway interface {
 
 // RatingGateway is an interface for movie ratings.
 type RatingGateway interface {
+	// GetMovieRating returns the aggregated rating for a movie with given id.
+	//
+	// It returns [gateway.ErrNotFound] if the rating doesn't exist yet.
 	GetMovieRating(ctx context.Context, movieID model.ID) (float64, error)
+
+	// SubmitMovieRating submits movie ratings for users.
+	//
+	// It returns [gateway.ErrInvalidInput] if the rating service rejects the rating as not valid.
 	SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) error
 }
 
@@ -71,7 +78,7 @@ func (c *Controller) GetMovie(ctx context.Context, id model.ID) (model.Movie, er
 		rating, err := c.rgw.GetMovieRating(gctx, id)
 		switch {
 		case errors.Is(err, gateway.ErrNotFound):
-			// a movie may exist without any ratings
+			movie.Rating = 0 // valid case: a movie may exist without any ratings
 		case err != nil:
 			return fmt.Errorf("GetMovieRating: %w", err)
 		default:

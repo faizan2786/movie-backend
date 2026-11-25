@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/httputil"
@@ -30,7 +29,7 @@ type Gateway struct {
 func NewGateway(r discovery.ServiceRegistry) *Gateway {
 	return &Gateway{
 		client: &http.Client{
-			Timeout: 5 * time.Second,
+			Timeout: gateway.ClientTimeout,
 			// disable redirects (because, it is an internal service call)
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse

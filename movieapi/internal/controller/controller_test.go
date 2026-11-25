@@ -31,7 +31,7 @@ var testMovie = model.Movie{
 
 var testRating = model.Rating{
 	UserID: testUserID,
-	Value:  testRatingValue,
+	Value:  8,
 }
 
 func TestGetMovie(t *testing.T) {

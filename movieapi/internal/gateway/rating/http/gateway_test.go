@@ -1,4 +1,4 @@
-package rating_test
+package http_test
 
 import (
 	"encoding/json/v2"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
-	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
+	httpgw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating/http"
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	"github.com/faizan2786/movie-backend/pkg/discovery/memory"
@@ -103,7 +103,7 @@ func registryWithTestServerPUT(t *testing.T, statusCode int) discovery.ServiceRe
 
 func TestGetMovieRating(t *testing.T) {
 	reg := registryWithTestServerGET(t, http.StatusOK, false)
-	gw := rating.NewGateway(reg)
+	gw := httpgw.NewGateway(reg)
 
 	data, err := gw.GetMovieRating(t.Context(), testMovieID)
 	require.NoError(t, err)
@@ -144,7 +144,7 @@ func TestGetMovieRating_WithErrors(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			reg := registryWithTestServerGET(t, tc.code, tc.invalidResp)
-			gw := rating.NewGateway(reg)
+			gw := httpgw.NewGateway(reg)
 
 			_, err := gw.GetMovieRating(t.Context(), testMovieID)
 			require.Error(t, err)
@@ -167,7 +167,7 @@ func TestGetMovieRating_WithErrors(t *testing.T) {
 
 func TestPUTMovieRating(t *testing.T) {
 	reg := registryWithTestServerPUT(t, http.StatusOK)
-	gw := rating.NewGateway(reg)
+	gw := httpgw.NewGateway(reg)
 
 	err := gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
 	require.NoError(t, err)
@@ -205,7 +205,7 @@ func TestPUTMovieRating_WithErrors(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			reg := registryWithTestServerPUT(t, tc.code)
-			gw := rating.NewGateway(reg)
+			gw := httpgw.NewGateway(reg)
 
 			err := gw.SubmitMovieRating(t.Context(), testMovieID, testDataPUT)
 			require.Error(t, err)

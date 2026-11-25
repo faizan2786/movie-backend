@@ -13,7 +13,7 @@ import (
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
 	metadatagw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata/grpc"
-	ratinggw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
+	ratinggw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating/grpc"
 	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
@@ -62,7 +62,7 @@ func run() error {
 	metadataGw := metadatagw.NewGateway(reg)
 	defer metadataGw.Close()
 	ratingGw := ratinggw.NewGateway(reg)
-	// defer ratingGw.Close() // TODO
+	defer ratingGw.Close()
 
 	// 3) register API handlers
 	mux := registerHandlers(metadataGw, ratingGw)

@@ -34,6 +34,8 @@ type RatingServiceClient interface {
 	// If the record hasn't been rated yet, it returns OK with rating unset.
 	GetAggregatedRating(ctx context.Context, in *GetAggregatedRatingRequest, opts ...grpc.CallOption) (*GetAggregatedRatingResponse, error)
 	// insert/update rating for a record.
+	//
+	// It returns InvalidArgument in case of invalid inputs.
 	PutRating(ctx context.Context, in *PutRatingRequest, opts ...grpc.CallOption) (*PutRatingResponse, error)
 }
 
@@ -76,6 +78,8 @@ type RatingServiceServer interface {
 	// If the record hasn't been rated yet, it returns OK with rating unset.
 	GetAggregatedRating(context.Context, *GetAggregatedRatingRequest) (*GetAggregatedRatingResponse, error)
 	// insert/update rating for a record.
+	//
+	// It returns InvalidArgument in case of invalid inputs.
 	PutRating(context.Context, *PutRatingRequest) (*PutRatingResponse, error)
 	mustEmbedUnimplementedRatingServiceServer()
 }
