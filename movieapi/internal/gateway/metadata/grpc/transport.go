@@ -5,15 +5,11 @@ import (
 	"github.com/faizan2786/movie-backend/movieapi/pkg/model"
 )
 
-func fromProto(msg *pb.GetMetadataResponse) *model.Metadata {
-	if msg.Metadata == nil {
-		return nil
-	}
-
-	return &model.Metadata{
-		ID:          model.ID(msg.Metadata.GetMovieId()),
-		Title:       msg.Metadata.GetTitle(),
-		ReleaseYear: msg.Metadata.GetReleaseYear(),
-		Description: msg.Metadata.GetDescription(),
+func fromProto(msg *pb.Metadata) model.Metadata {
+	return model.Metadata{
+		ID:          model.ID(msg.GetMovieId()),
+		Title:       msg.GetTitle(),
+		ReleaseYear: msg.GetReleaseYear(),
+		Description: msg.GetDescription(),
 	}
 }

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 
 	pb "github.com/faizan2786/movie-backend/gen/metadatapb"
 	"google.golang.org/grpc/codes"
@@ -26,10 +27,10 @@ func NewGateway(r discovery.ServiceRegistry) *Gateway {
 }
 
 // GetMetadata returns [model.Metadata] for a movie with given id.
-// It returns [gateway.ErrNotFound] if the movie doesn't exists.
+// It returns [gateway.ErrNotFound] if the movie doesn't exist.
 func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error) {
 	// create a new grpc connection to the metadata service
-	conn, err := grpcutil.NewGrpcClient(ctx, g.registry, discovery.MetadataServiceName)
+	conn, err := grpcutil.NewConn(ctx, discovery.MetadataServiceName, g.registry)
 	if err != nil {
 		return model.Metadata{}, err
 	}
@@ -38,21 +39,26 @@ func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata,
 	// create a client for the Metadata RPC server
 	client := pb.NewMetadataServiceClient(conn)
 
-	res, err := client.GetMetadata(ctx, &pb.GetMetadataRequest{MovieId: string(id)})
+	ctxTimeout, cancel := context.WithTimeout(ctx, gateway.ClientTimeout)
+	defer cancel()
 
+	res, err := client.GetMetadata(ctxTimeout, &pb.GetMetadataRequest{MovieId: string(id)})
 	if err != nil {
 		switch status.Code(err) {
 		case codes.NotFound:
 			return model.Metadata{}, gateway.ErrNotFound
+		case codes.InvalidArgument:
+			return model.Metadata{}, gateway.ErrInvalidInput
 		default:
 			return model.Metadata{}, err
 		}
 	}
 
-	// convert response proto to the domain model
-	var data *model.Metadata
-	if data = fromProto(res); data == nil {
-		return model.Metadata{}, gateway.ErrNotFound
+	metadataPB := res.GetMetadata()
+	if metadataPB == nil {
+		return model.Metadata{}, errors.New("metadata server returned empty response")
 	}
-	return *data, nil
+
+	// convert metadata proto to the domain model
+	return fromProto(metadataPB), nil
 }

@@ -2,7 +2,11 @@ package gateway
 
 import (
 	"errors"
+	"time"
 )
+
+// ClientTimeout is the max. duration for making network calls to upstream services.
+const ClientTimeout time.Duration = 5 * time.Second
 
 var (
 	// ErrNotFound is returned when a resource is "not found".

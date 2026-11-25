@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
-	gw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata/http"
-	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
+	metadatagw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata/grpc"
+	ratinggw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating"
 	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
@@ -75,8 +75,8 @@ func run() error {
 func registerHandlers(reg discovery.ServiceRegistry) http.Handler {
 
 	// Intialise the service handler
-	metadataGw := gw.NewGateway(reg)
-	ratingGw := rating.NewGateway(reg)
+	metadataGw := metadatagw.NewGateway(reg)
+	ratingGw := ratinggw.NewGateway(reg)
 	controller := controller.New(metadataGw, ratingGw)
 	handler := handler.New(controller)
 

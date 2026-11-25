@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway"
 	"github.com/faizan2786/movie-backend/movieapi/internal/gateway/httputil"
@@ -31,7 +30,7 @@ type Gateway struct {
 func NewGateway(r discovery.ServiceRegistry) *Gateway {
 	return &Gateway{
 		client: &http.Client{
-			Timeout: 5 * time.Second,
+			Timeout: gateway.ClientTimeout,
 			// disable redirects (because, it is an internal service call)
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
@@ -41,7 +40,7 @@ func NewGateway(r discovery.ServiceRegistry) *Gateway {
 	}
 }
 
-// GetMovieRating returns aggregated [model.Rating] for a movie with given id.
+// GetMovieRating returns the aggregated rating for a movie with given id.
 // It returns [gateway.ErrNotFound] if the rating doesn't exist.
 func (g *Gateway) GetMovieRating(ctx context.Context, movieID model.ID) (float64, error) {
 	var rating float64

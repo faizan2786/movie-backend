@@ -30,9 +30,8 @@ const (
 type MovieServiceClient interface {
 	// GetMovie returns a movie's details and its aggregated rating, if any.
 	//
-	// It returns INVALID_ARGUMENT if movie_id is not a valid ID, and NOT_FOUND
-	// if no movie exists with the given ID. The call fails if the rating can't be
-	// fetched; it does not return the movie with rating unset in that case.
+	// The call fails if the movie rating can't be fetched;
+	// it does not return the movie with rating unset in that case.
 	GetMovie(ctx context.Context, in *GetMovieRequest, opts ...grpc.CallOption) (*GetMovieResponse, error)
 }
 
@@ -62,9 +61,8 @@ func (c *movieServiceClient) GetMovie(ctx context.Context, in *GetMovieRequest, 
 type MovieServiceServer interface {
 	// GetMovie returns a movie's details and its aggregated rating, if any.
 	//
-	// It returns INVALID_ARGUMENT if movie_id is not a valid ID, and NOT_FOUND
-	// if no movie exists with the given ID. The call fails if the rating can't be
-	// fetched; it does not return the movie with rating unset in that case.
+	// The call fails if the movie rating can't be fetched;
+	// it does not return the movie with rating unset in that case.
 	GetMovie(context.Context, *GetMovieRequest) (*GetMovieResponse, error)
 	mustEmbedUnimplementedMovieServiceServer()
 }

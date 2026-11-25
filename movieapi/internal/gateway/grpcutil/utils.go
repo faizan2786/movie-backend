@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// NewGrpcClient returns a new grpc connection to one of the service instances.
-func NewGrpcClient(ctx context.Context, r discovery.ServiceRegistry, service string) (*grpc.ClientConn, error) {
+// NewConn returns a new grpc connection to one of the service instances.
+func NewConn(ctx context.Context, service string, r discovery.ServiceRegistry) (*grpc.ClientConn, error) {
 	// get metadata service addresses and choose one at random
 	addrs, err := r.ServiceAddresses(ctx, service)
 	if err != nil {

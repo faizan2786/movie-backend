@@ -81,10 +81,10 @@ func (m *MockRatingGateway) EXPECT() *MockRatingGatewayMockRecorder {
 }
 
 // GetMovieRating mocks base method.
-func (m *MockRatingGateway) GetMovieRating(ctx context.Context, movieID model.ID) (model.RatingValue, error) {
+func (m *MockRatingGateway) GetMovieRating(ctx context.Context, movieID model.ID) (float64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMovieRating", ctx, movieID)
-	ret0, _ := ret[0].(model.RatingValue)
+	ret0, _ := ret[0].(float64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

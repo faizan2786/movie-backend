@@ -22,7 +22,7 @@ type MetadataGateway interface {
 
 // RatingGateway is an interface for movie ratings.
 type RatingGateway interface {
-	GetMovieRating(ctx context.Context, movieID model.ID) (model.RatingValue, error)
+	GetMovieRating(ctx context.Context, movieID model.ID) (float64, error)
 	SubmitMovieRating(ctx context.Context, movieID model.ID, rating model.Rating) error
 }
 

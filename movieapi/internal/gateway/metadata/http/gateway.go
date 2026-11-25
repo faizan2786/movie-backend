@@ -41,7 +41,7 @@ func NewGateway(r discovery.ServiceRegistry) *Gateway {
 }
 
 // GetMetadata returns [model.Metadata] for a movie with given id.
-// It returns [gateway.ErrNotFound] if the movie doesn't exists.
+// It returns [gateway.ErrNotFound] if the movie doesn't exist.
 func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error) {
 	var data model.Metadata
 

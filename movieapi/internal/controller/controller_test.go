@@ -14,7 +14,7 @@ import (
 const (
 	testMovieID     model.ID = "abc-123"
 	testUserID               = "1"
-	testRatingValue          = model.RatingValue(7.5)
+	testRatingValue float64  = 7.5
 )
 
 var testMetadata = model.Metadata{
@@ -64,7 +64,7 @@ func TestGetMovie_MetadataErrNotFound(t *testing.T) {
 
 	// set the mock call expectations with Error values to be returned
 	metadataMock.EXPECT().GetMetadata(gomock.Any(), testMovieID).Return(model.Metadata{}, gateway.ErrNotFound)
-	ratingMock.EXPECT().GetMovieRating(gomock.Any(), testMovieID).Return(model.RatingValue(0), nil)
+	ratingMock.EXPECT().GetMovieRating(gomock.Any(), testMovieID).Return(float64(0), nil)
 
 	// call the method under test
 	_, err := c.GetMovie(t.Context(), testMovieID)
@@ -82,7 +82,7 @@ func TestGetMovie_RatingErrNotFound(t *testing.T) {
 
 	// set the mock call expectations with Error values to be returned
 	metadataMock.EXPECT().GetMetadata(gomock.Any(), testMovieID).Return(model.Metadata{}, nil)
-	ratingMock.EXPECT().GetMovieRating(gomock.Any(), testMovieID).Return(model.RatingValue(0), gateway.ErrNotFound)
+	ratingMock.EXPECT().GetMovieRating(gomock.Any(), testMovieID).Return(float64(0), gateway.ErrNotFound)
 
 	// call the method under test
 	_, err := c.GetMovie(t.Context(), testMovieID)

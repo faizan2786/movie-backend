@@ -29,9 +29,14 @@ const (
 //
 // a movie metadata grpc service
 type MetadataServiceClient interface {
-	// fetch metadata for a movie
+	// Fetch metadata for a movie.
+	//
+	// It returns InvalidArgument in case of invalid inputs
+	// and returns NotFound if the movie with given ID doesn't exist.
 	GetMetadata(ctx context.Context, in *GetMetadataRequest, opts ...grpc.CallOption) (*GetMetadataResponse, error)
-	// insert/update metadata for a movie
+	// Insert/update metadata for a movie.
+	//
+	// It returns InvalidArgument in case of invalid inputs.
 	PutMetadata(ctx context.Context, in *PutMetadataRequest, opts ...grpc.CallOption) (*PutMetadataResponse, error)
 }
 
@@ -69,9 +74,14 @@ func (c *metadataServiceClient) PutMetadata(ctx context.Context, in *PutMetadata
 //
 // a movie metadata grpc service
 type MetadataServiceServer interface {
-	// fetch metadata for a movie
+	// Fetch metadata for a movie.
+	//
+	// It returns InvalidArgument in case of invalid inputs
+	// and returns NotFound if the movie with given ID doesn't exist.
 	GetMetadata(context.Context, *GetMetadataRequest) (*GetMetadataResponse, error)
-	// insert/update metadata for a movie
+	// Insert/update metadata for a movie.
+	//
+	// It returns InvalidArgument in case of invalid inputs.
 	PutMetadata(context.Context, *PutMetadataRequest) (*PutMetadataResponse, error)
 	mustEmbedUnimplementedMetadataServiceServer()
 }
