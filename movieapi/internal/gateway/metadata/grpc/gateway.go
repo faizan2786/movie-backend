@@ -17,24 +17,30 @@ import (
 
 // Gateway is a gateway to communicate with the metadata service.
 type Gateway struct {
-	// registry to discover the metadata service instances
 	registry discovery.ServiceRegistry
+	pool     *grpcutil.ConnPool
 }
 
 // NewGateway returns a new [Gateway] to the metadata service discovered via given registry.
 func NewGateway(r discovery.ServiceRegistry) *Gateway {
-	return &Gateway{registry: r}
+	return &Gateway{
+		registry: r,
+		pool:     &grpcutil.ConnPool{},
+	}
+}
+
+// Close closes the grpc connections to upstream service.
+func (g *Gateway) Close() {
+	g.pool.Close()
 }
 
 // GetMetadata returns [model.Metadata] for a movie with given id.
 // It returns [gateway.ErrNotFound] if the movie doesn't exist.
 func (g *Gateway) GetMetadata(ctx context.Context, id model.ID) (model.Metadata, error) {
-	// create a new grpc connection to the metadata service
-	conn, err := grpcutil.NewConn(ctx, discovery.MetadataServiceName, g.registry)
+	conn, err := grpcutil.GetServiceConn(ctx, discovery.MetadataServiceName, g.registry, g.pool)
 	if err != nil {
 		return model.Metadata{}, err
 	}
-	defer conn.Close()
 
 	// create a client for the Metadata RPC server
 	client := pb.NewMetadataServiceClient(conn)

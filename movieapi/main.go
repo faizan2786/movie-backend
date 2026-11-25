@@ -58,10 +58,16 @@ func run() error {
 		return fmt.Errorf("register service: %w", err)
 	}
 
-	// 2) register API handlers
-	mux := registerHandlers(reg)
+	// 2) create upstream service gateways
+	metadataGw := metadatagw.NewGateway(reg)
+	defer metadataGw.Close()
+	ratingGw := ratinggw.NewGateway(reg)
+	// defer ratingGw.Close() // TODO
 
-	// 3) serve until a shutdown signal is received, then deregister & shut down gracefully
+	// 3) register API handlers
+	mux := registerHandlers(metadataGw, ratingGw)
+
+	// 4) serve until a shutdown signal is received, then deregister & shut down gracefully
 	srv := &http.Server{Addr: addr, Handler: mux}
 
 	deregisterFunc := func() {
@@ -72,12 +78,8 @@ func run() error {
 	return server.ServeHttp(ctx, srv, gracefulShutdownTimeout, deregisterFunc)
 }
 
-func registerHandlers(reg discovery.ServiceRegistry) http.Handler {
-
-	// Intialise the service handler
-	metadataGw := metadatagw.NewGateway(reg)
-	ratingGw := ratinggw.NewGateway(reg)
-	controller := controller.New(metadataGw, ratingGw)
+func registerHandlers(mgw controller.MetadataGateway, rgw controller.RatingGateway) http.Handler {
+	controller := controller.New(mgw, rgw)
 	handler := handler.New(controller)
 
 	// register API paths with handlers
