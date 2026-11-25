@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/faizan2786/movie-backend/gen/metadatapb"
 	"github.com/faizan2786/movie-backend/gen/movieapipb"
 	"google.golang.org/protobuf/proto"
 )
@@ -75,12 +74,10 @@ func serializeToProtobuf(pb *movieapipb.Movie) []byte {
 // convert Movie struct into a protobuf type
 func toProto(movie *Movie) *movieapipb.Movie {
 	return &movieapipb.Movie{
-		Metadata: &metadatapb.Metadata{
-			MovieId:     movie.ID,
-			Title:       movie.Title,
-			ReleaseYear: movie.ReleaseYear,
-			Description: movie.Description,
-		},
-		Rating: movie.RatingValue,
+		MovieId:     movie.ID,
+		Title:       movie.Title,
+		ReleaseYear: movie.ReleaseYear,
+		Description: movie.Description,
+		Rating:      new(movie.RatingValue),
 	}
 }

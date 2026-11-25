@@ -2,12 +2,33 @@ syntax = "proto3";
 
 package movieapi;
 
-import "metadata/metadata.proto";
+option go_package = "github.com/faizan2786/movie-backend/gen/movieapipb";
 
-option go_package = "github.com/faizan2786/movie-backend/gen/movieapipb"; // <go-package-import-path>
-
-// Movie is the info related to a movie.
+// Movie is a movie's details together with its aggregated rating.
 message Movie {
-  metadata.Metadata metadata = 1;
-  double rating = 2;
+  string movie_id = 1;
+  string title = 2;
+  int32 release_year = 3;
+  string description = 4;
+
+  // rating is the average of all user ratings (1 to 10).
+  // It is unset if the movie hasn't been rated yet.
+  optional double rating = 5;
+}
+
+// MovieService is the public API for fetching movies.
+service MovieService {
+  // GetMovie returns a movie's details and its aggregated rating, if any.
+  //
+  // The call fails if the movie rating can't be fetched;
+  // it does not return the movie with rating unset in that case.
+  rpc GetMovie(GetMovieRequest) returns (GetMovieResponse);
+}
+
+message GetMovieRequest {
+  string movie_id = 1;
+}
+
+message GetMovieResponse {
+  Movie movie = 1;
 }

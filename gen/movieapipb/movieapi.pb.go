@@ -7,7 +7,6 @@
 package movieapipb
 
 import (
-	metadatapb "github.com/faizan2786/movie-backend/gen/metadatapb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -22,11 +21,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Movie is the info related to a movie.
+// Movie is a movie's details together with its aggregated rating.
 type Movie struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *metadatapb.Metadata   `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Rating        float64                `protobuf:"fixed64,2,opt,name=rating,proto3" json:"rating,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	MovieId     string                 `protobuf:"bytes,1,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	Title       string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	ReleaseYear int32                  `protobuf:"varint,3,opt,name=release_year,json=releaseYear,proto3" json:"release_year,omitempty"`
+	Description string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	// rating is the average of all user ratings (1 to 10).
+	// It is unset if the movie hasn't been rated yet.
+	Rating        *float64 `protobuf:"fixed64,5,opt,name=rating,proto3,oneof" json:"rating,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,28 +65,147 @@ func (*Movie) Descriptor() ([]byte, []int) {
 	return file_movieapi_movieapi_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Movie) GetMetadata() *metadatapb.Metadata {
+func (x *Movie) GetMovieId() string {
 	if x != nil {
-		return x.Metadata
+		return x.MovieId
 	}
-	return nil
+	return ""
+}
+
+func (x *Movie) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *Movie) GetReleaseYear() int32 {
+	if x != nil {
+		return x.ReleaseYear
+	}
+	return 0
+}
+
+func (x *Movie) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
 }
 
 func (x *Movie) GetRating() float64 {
-	if x != nil {
-		return x.Rating
+	if x != nil && x.Rating != nil {
+		return *x.Rating
 	}
 	return 0
+}
+
+type GetMovieRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MovieId       string                 `protobuf:"bytes,1,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMovieRequest) Reset() {
+	*x = GetMovieRequest{}
+	mi := &file_movieapi_movieapi_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMovieRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMovieRequest) ProtoMessage() {}
+
+func (x *GetMovieRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movieapi_movieapi_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMovieRequest.ProtoReflect.Descriptor instead.
+func (*GetMovieRequest) Descriptor() ([]byte, []int) {
+	return file_movieapi_movieapi_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetMovieRequest) GetMovieId() string {
+	if x != nil {
+		return x.MovieId
+	}
+	return ""
+}
+
+type GetMovieResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Movie         *Movie                 `protobuf:"bytes,1,opt,name=movie,proto3" json:"movie,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMovieResponse) Reset() {
+	*x = GetMovieResponse{}
+	mi := &file_movieapi_movieapi_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMovieResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMovieResponse) ProtoMessage() {}
+
+func (x *GetMovieResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movieapi_movieapi_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMovieResponse.ProtoReflect.Descriptor instead.
+func (*GetMovieResponse) Descriptor() ([]byte, []int) {
+	return file_movieapi_movieapi_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetMovieResponse) GetMovie() *Movie {
+	if x != nil {
+		return x.Movie
+	}
+	return nil
 }
 
 var File_movieapi_movieapi_proto protoreflect.FileDescriptor
 
 const file_movieapi_movieapi_proto_rawDesc = "" +
 	"\n" +
-	"\x17movieapi/movieapi.proto\x12\bmovieapi\x1a\x17metadata/metadata.proto\"O\n" +
-	"\x05Movie\x12.\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x12.metadata.MetadataR\bmetadata\x12\x16\n" +
-	"\x06rating\x18\x02 \x01(\x01R\x06ratingB4Z2github.com/faizan2786/movie-backend/gen/movieapipbb\x06proto3"
+	"\x17movieapi/movieapi.proto\x12\bmovieapi\"\xa5\x01\n" +
+	"\x05Movie\x12\x19\n" +
+	"\bmovie_id\x18\x01 \x01(\tR\amovieId\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12!\n" +
+	"\frelease_year\x18\x03 \x01(\x05R\vreleaseYear\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1b\n" +
+	"\x06rating\x18\x05 \x01(\x01H\x00R\x06rating\x88\x01\x01B\t\n" +
+	"\a_rating\",\n" +
+	"\x0fGetMovieRequest\x12\x19\n" +
+	"\bmovie_id\x18\x01 \x01(\tR\amovieId\"9\n" +
+	"\x10GetMovieResponse\x12%\n" +
+	"\x05movie\x18\x01 \x01(\v2\x0f.movieapi.MovieR\x05movie2Q\n" +
+	"\fMovieService\x12A\n" +
+	"\bGetMovie\x12\x19.movieapi.GetMovieRequest\x1a\x1a.movieapi.GetMovieResponseB4Z2github.com/faizan2786/movie-backend/gen/movieapipbb\x06proto3"
 
 var (
 	file_movieapi_movieapi_proto_rawDescOnce sync.Once
@@ -96,15 +219,18 @@ func file_movieapi_movieapi_proto_rawDescGZIP() []byte {
 	return file_movieapi_movieapi_proto_rawDescData
 }
 
-var file_movieapi_movieapi_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_movieapi_movieapi_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_movieapi_movieapi_proto_goTypes = []any{
-	(*Movie)(nil),               // 0: movieapi.Movie
-	(*metadatapb.Metadata)(nil), // 1: metadata.Metadata
+	(*Movie)(nil),            // 0: movieapi.Movie
+	(*GetMovieRequest)(nil),  // 1: movieapi.GetMovieRequest
+	(*GetMovieResponse)(nil), // 2: movieapi.GetMovieResponse
 }
 var file_movieapi_movieapi_proto_depIdxs = []int32{
-	1, // 0: movieapi.Movie.metadata:type_name -> metadata.Metadata
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
+	0, // 0: movieapi.GetMovieResponse.movie:type_name -> movieapi.Movie
+	1, // 1: movieapi.MovieService.GetMovie:input_type -> movieapi.GetMovieRequest
+	2, // 2: movieapi.MovieService.GetMovie:output_type -> movieapi.GetMovieResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -115,15 +241,16 @@ func file_movieapi_movieapi_proto_init() {
 	if File_movieapi_movieapi_proto != nil {
 		return
 	}
+	file_movieapi_movieapi_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_movieapi_movieapi_proto_rawDesc), len(file_movieapi_movieapi_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   3,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_movieapi_movieapi_proto_goTypes,
 		DependencyIndexes: file_movieapi_movieapi_proto_depIdxs,
