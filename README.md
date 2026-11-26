@@ -17,39 +17,37 @@ The repository is organized as a **multi-module Go workspace** so each service c
 
 | Service    | Default address  | Role                                                              |
 | ---------- | ---------------- | ----------------------------------------------------------------- |
-| `movieapi` | `localhost:8083` | A public API server; calls `metadata` and `rating` over HTTP      |
-| `metadata` | `localhost:8081` | Stores movie metadata                                             |
-| `rating`   | `localhost:8082` | Stores ratings and computes averages                              |
+| `movieapi` | `localhost:8083` | Public HTTP API server; calls `metadata` and `rating` over gRPC   |
+| `metadata` | `localhost:8081` | gRPC service that stores movie metadata                           |
+| `rating`   | `localhost:8082` | gRPC service that stores ratings and computes averages            |
 
 Each service accepts a `-port` flag to override its default port (e.g. `go run ./rating -port 9082`), so you can run several instances of the same service.
 
 ```text
-client ──▶ movieapi ──┬──▶ metadata
-                      └──▶ rating
+client ──HTTP──▶ movieapi ──gRPC──┬──▶ metadata
+                                  └──▶ rating
 ```
 
 ## Protobuf definitions
 
-The `.proto` files live in `proto/` directory, and the generated Go code lives in `gen/` folder (e.g. `proto/metadata/` generates `gen/metadatapb/`).
+The `.proto` files live in `proto/` directory, and the generated Go code lives in `gen/` folder (e.g. `proto/metadata/` generates `gen/metadatapb/`). There are definitions for `metadata`, `rating`, and `movieapi`; the `movieapi` gRPC API is implemented but not served yet.
 
 Code is generated with [Buf](https://buf.build/docs/), configured using [buf.yaml](buf.yaml) and [buf.gen.yaml](buf.gen.yaml) files. This requires `buf` CLI and `protoc-gen-go` and `protoc-gen-go-grpc` plugins to be installed locally.
 
 After changing a `.proto` file, run the following commands from the repository root to format, lint and generate code from `.proto` files:
+
 ```sh
 buf format -w   # fix the formatting
 buf lint        # run the buf linter on .proto files
 buf generate    # generate the code
-
 ```
 
-## Service discovery & Graceful Shutdown
+## Service discovery
 
 Services find each other through a [Consul](https://developer.hashicorp.com/consul) registry at `localhost:8500`, using the shared `pkg/discovery` package:
 
 - On startup, each service registers an instance with its address and sends a heartbeat every second; Consul marks an instance unhealthy if it misses heartbeats for 5 seconds.
-- On shutdown, e.g. on `SIGINT` (Ctrl+C) or `SIGTERM`, each service deregisters its instance before draining in-flight requests. 
-- In-flight requests get up to 5 seconds to finish before the remaining connections are closed, and a second Ctrl+C during shutdown forces the service to quit.
-- `movieapi` looks up the healthy `metadata` and `rating` instances for each request and picks one at random.
+- `movieapi` looks up the healthy `metadata` and `rating` instances for each request and picks one at random. It keeps one gRPC connection per instance address and reuses it across requests.
 
 Start a local Consul dev server with Docker before running the services:
 
@@ -58,6 +56,11 @@ docker run -d -p 8500:8500 -p 8600:8600/udp --name=dev-consul hashicorp/consul a
 ```
 
 The Consul UI is then available at <http://localhost:8500>, where you can see the registered services and their health.
+
+## Graceful shutdown
+
+- On shutdown, e.g. on `SIGINT` (Ctrl+C) or `SIGTERM`, each service deregisters its instance before draining in-flight requests.
+- In-flight requests get up to 5 seconds to finish before the remaining connections are closed, and a second Ctrl+C during shutdown forces the service to quit.
 
 ## Development
 

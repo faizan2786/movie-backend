@@ -82,9 +82,11 @@ metadata: <
 
 ```text
 metadata/
-├── main.go                         # Wires the service layers and starts the HTTP server
+├── main.go                         # Wires the service layers and starts the gRPC server
 ├── internal/
-│   ├── handler/                    # API layer for HTTP request handling
+│   ├── handler/                    # API layer
+│   │   ├── grpc/                   # gRPC server (used by main.go)
+│   │   └── http/                   # Legacy HTTP handlers (not wired up)
 │   ├── controller/                 # Business logic layer for metadata operations
 │   └── repository/                 # Data access layer for metadata storage/retrieval
 │       └── memory/                 # In-memory metadata storage
