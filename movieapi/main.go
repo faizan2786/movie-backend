@@ -14,7 +14,7 @@ import (
 	"github.com/faizan2786/movie-backend/movieapi/internal/controller"
 	metadatagw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/metadata/grpc"
 	ratinggw "github.com/faizan2786/movie-backend/movieapi/internal/gateway/rating/grpc"
-	"github.com/faizan2786/movie-backend/movieapi/internal/handler"
+	httphandler "github.com/faizan2786/movie-backend/movieapi/internal/handler/http"
 	"github.com/faizan2786/movie-backend/pkg/discovery"
 	registry "github.com/faizan2786/movie-backend/pkg/discovery/consul"
 	"github.com/faizan2786/movie-backend/pkg/server"
@@ -80,7 +80,7 @@ func run() error {
 
 func registerHandlers(mgw controller.MetadataGateway, rgw controller.RatingGateway) http.Handler {
 	controller := controller.New(mgw, rgw)
-	handler := handler.New(controller)
+	handler := httphandler.New(controller)
 
 	// register API paths with handlers
 	mux := http.NewServeMux()
